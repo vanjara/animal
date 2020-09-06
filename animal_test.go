@@ -2,6 +2,7 @@ package animal_test
 
 import (
 	"animal"
+	"bytes"
 	"testing"
 )
 
@@ -30,6 +31,26 @@ func TestAskUserYesOrNo(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		got := animal.AskUserYesOrNo(testCase.question)
+		if testCase.want != got {
+			t.Errorf("want %q, got %q", testCase.want, got)
+		}
+	}
+}
+
+func TestGetUserYesOrNo(t *testing.T) {
+	t.Parallel()
+	var stdin bytes.Buffer
+	stdin.Write([]byte("yes\n"))
+	testCases := []struct {
+		question string
+		want     string
+	}{
+		{question: "Is it a horse", want: "yes"},
+		{question: "Is it yes or no", want: "no"},
+		{question: "Does it have 2 legs", want: "no"},
+	}
+	for _, testCase := range testCases {
+		got := animal.GetUserYesOrNo(stdin)
 		if testCase.want != got {
 			t.Errorf("want %q, got %q", testCase.want, got)
 		}
