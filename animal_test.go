@@ -39,20 +39,20 @@ func TestAskUserYesOrNo(t *testing.T) {
 
 func TestGetUserYesOrNo(t *testing.T) {
 	t.Parallel()
-	var stdin bytes.Buffer
-	stdin.Write([]byte("yes\n"))
+	var input bytes.Buffer
+	input.Write([]byte("yes"))
 	testCases := []struct {
 		question string
 		want     string
 	}{
 		{question: "Is it a horse", want: "yes"},
-		{question: "Is it yes or no", want: "no"},
-		{question: "Does it have 2 legs", want: "no"},
+		{question: "Is it yes or no", want: "yes"},
+		{question: "Does it have 2 legs", want: "yes"},
 	}
 	for _, testCase := range testCases {
-		got := animal.GetUserYesOrNo(stdin)
+		got := animal.GetUserYesOrNo(input.String())
 		if testCase.want != got {
-			t.Errorf("want %q, got %q", testCase.want, got)
+			t.Errorf("want %q, got %q\n", testCase.want, got)
 		}
 	}
 }

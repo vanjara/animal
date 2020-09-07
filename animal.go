@@ -32,9 +32,11 @@ func GetUserYesOrNo(question string) string {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	input := scanner.Text()
-	fmt.Printf("You typed: %q", input)
+	fmt.Printf("You typed: %s\n", input)
 	if input == "yes" {
+		//fmt.Printf("Returning: %s", input)
 		return "yes"
 	}
+	fmt.Printf("Returning: no because input is %s", input)
 	return "no"
 }
