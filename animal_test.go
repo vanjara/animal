@@ -2,7 +2,7 @@ package animal_test
 
 import (
 	"animal"
-	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -39,18 +39,28 @@ func TestAskUserYesOrNo(t *testing.T) {
 
 func TestGetUserYesOrNo(t *testing.T) {
 	t.Parallel()
-	var input bytes.Buffer
-	input.Write([]byte("yes"))
+	// A single specific test
+	testIn := strings.NewReader("yes\n")
+	testQuestion := "Is it a horse?\n"
+	testData := animal.Data{testQuestion, testIn}
+	got := animal.GetUserYesOrNo(testData)
+	want := "yes"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+
+	// multiple test cases
 	testCases := []struct {
 		question string
 		want     string
 	}{
-		{question: "Is it a horse", want: "yes"},
-		{question: "Is it yes or no", want: "yes"},
-		{question: "Does it have 2 legs", want: "yes"},
+		{question: "Is it a horse?\n", want: "yes"},
+		{question: "Is it yes or no?\n", want: "yes"},
+		{question: "Does it have 2 legs?\n", want: "yes"},
 	}
 	for _, testCase := range testCases {
-		got := animal.GetUserYesOrNo(input.String())
+		testData := animal.Data{testCase.question, strings.NewReader("yes\n")}
+		got := animal.GetUserYesOrNo(testData)
 		if testCase.want != got {
 			t.Errorf("want %q, got %q\n", testCase.want, got)
 		}
