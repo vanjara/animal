@@ -31,14 +31,16 @@ func AskUserYesOrNo(question string) string {
 	return "no"
 }
 
-func GetUserYesOrNo(data Data) string {
-	scanner := bufio.NewScanner(data.In)
+func GetUserYesOrNo(question string, r io.Reader) (string, error) {
+	scanner := bufio.NewScanner(r)
 	scanner.Scan()
 	input := scanner.Text()
-	fmt.Printf("You answered: %s\n", input)
-	if input == "yes" {
-		return "yes"
+	switch input {
+	case "yes", "y", "YES", "Yes":
+		return "yes", nil
+	case "no", "n", "No", "NO":
+		return "no", nil
+	default:
+		return "", fmt.Errorf("Unexpected input: %s", input)
 	}
-	fmt.Printf("Returning: no because input is %s", input)
-	return "no"
 }
