@@ -6,14 +6,13 @@ import (
 	"io"
 )
 
+const (
+	AnswerYes = "yes"
+	AnswerNo  = "no"
+)
+
 type game struct {
 	Running bool
-}
-
-// Data struct for the game
-type Data struct {
-	Question string
-	In       io.Reader
 }
 
 func New() game {
@@ -22,14 +21,33 @@ func New() game {
 	}
 }
 
-func AskUserYesOrNo(question string) string {
-	//Extend test to not pass by just returning the question
-	//enter muliple test cases
-	if question == "Is it a horse" {
-		return "yes"
-	}
-	return "no"
-}
+// type question struct{
+// 	q   string,
+// 	id  int,
+// 	yes int, // what question is next, if answer is yes
+// 	no  int // what question is next, if answer is no
+// }
+
+// var questions = []question{
+// 	{
+// 		q: "Does it have 4 legs",
+// 		id: 1
+// 		yes: 2
+// 		no: 3
+// 	}
+// 	{
+// 		q: "Is it a horse?",
+// 		id: 2
+// 		yes: 0 // how do we signify a win?
+// 		no: 3
+// 	}
+// 	{
+// 		q: "Is it a snake?",
+// 		id: 3
+// 		yes: 0 // how do we signify a win?
+// 		no: 100 // what if there are no more questions, user wins
+// 	}
+// }
 
 func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 	scanner := bufio.NewScanner(r)
@@ -37,9 +55,9 @@ func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 	input := scanner.Text()
 	switch input {
 	case "yes", "y", "YES", "Yes":
-		return "yes", nil
-	case "no", "n", "No", "NO":
-		return "no", nil
+		return AnswerYes, nil
+	case "no", "n", "NO", "No":
+		return AnswerNo, nil
 	default:
 		return "", fmt.Errorf("Unexpected input: %s", input)
 	}
