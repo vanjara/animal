@@ -2,7 +2,7 @@ package animal_test
 
 import (
 	"animal"
-	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -39,20 +39,29 @@ func TestAskUserYesOrNo(t *testing.T) {
 
 func TestGetUserYesOrNo(t *testing.T) {
 	t.Parallel()
-	var stdin bytes.Buffer
-	stdin.Write([]byte("yes\n"))
+	// multiple test cases
 	testCases := []struct {
-		question string
-		want     string
+		input         string
+		want          string
+		errorExpected bool
 	}{
-		{question: "Is it a horse", want: "yes"},
-		{question: "Is it yes or no", want: "no"},
-		{question: "Does it have 2 legs", want: "no"},
+		{input: "yes", want: "yes"},
+		{input: "y", want: "yes"},
+		{input: "YES", want: "yes"},
+		{input: "Yes", want: "yes"},
+		{input: "no", want: "no"},
+		{input: "n", want: "no"},
+		{input: "NO", want: "no"},
+		{input: "No", want: "no"},
+		{input: "Bogus", want: "no", errorExpected: true},
 	}
-	for _, testCase := range testCases {
-		got := animal.GetUserYesOrNo(stdin)
-		if testCase.want != got {
-			t.Errorf("want %q, got %q", testCase.want, got)
+	for _, tc := range testCases {
+		got, err := animal.GetUserYesOrNo("Dummy question?", strings.NewReader(tc.input))
+		if tc.errorExpected != (err != nil) {
+			t.Fatalf("Give input %q, unexpected error Status: %v", tc.input, err)
+		}
+		if !tc.errorExpected && tc.want != got {
+			t.Errorf("Given input: %q, want %q, got %q\n", tc.input, tc.want, got)
 		}
 	}
 }

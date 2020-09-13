@@ -3,11 +3,17 @@ package animal
 import (
 	"bufio"
 	"fmt"
-	"os"
+	"io"
 )
 
 type game struct {
 	Running bool
+}
+
+// Data struct for the game
+type Data struct {
+	Question string
+	In       io.Reader
 }
 
 func New() game {
@@ -25,16 +31,16 @@ func AskUserYesOrNo(question string) string {
 	return "no"
 }
 
-//func GetUserYesOrNo(question string) string {
-func GetUserYesOrNo(question string) string {
-	//question := "Is it a horse?"
-	fmt.Printf(question)
-	scanner := bufio.NewScanner(os.Stdin)
+func GetUserYesOrNo(question string, r io.Reader) (string, error) {
+	scanner := bufio.NewScanner(r)
 	scanner.Scan()
 	input := scanner.Text()
-	fmt.Printf("You typed: %q", input)
-	if input == "yes" {
-		return "yes"
+	switch input {
+	case "yes", "y", "YES", "Yes":
+		return "yes", nil
+	case "no", "n", "No", "NO":
+		return "no", nil
+	default:
+		return "", fmt.Errorf("Unexpected input: %s", input)
 	}
-	return "no"
 }
