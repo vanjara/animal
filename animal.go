@@ -21,33 +21,33 @@ func New() game {
 	}
 }
 
-// type question struct{
-// 	q   string,
-// 	id  int,
-// 	yes int, // what question is next, if answer is yes
-// 	no  int // what question is next, if answer is no
-// }
+type question struct {
+	q   string
+	id  int
+	yes int // what question is next, if answer is yes
+	no  int // what question is next, if answer is no
+}
 
-// var questions = []question{
-// 	{
-// 		q: "Does it have 4 legs",
-// 		id: 1
-// 		yes: 2
-// 		no: 3
-// 	}
-// 	{
-// 		q: "Is it a horse?",
-// 		id: 2
-// 		yes: 0 // how do we signify a win?
-// 		no: 3
-// 	}
-// 	{
-// 		q: "Is it a snake?",
-// 		id: 3
-// 		yes: 0 // how do we signify a win?
-// 		no: 100 // what if there are no more questions, user wins
-// 	}
-// }
+var questions = []question{
+	{
+		q:   "Does it have 4 legs",
+		id:  1,
+		yes: 2,
+		no:  3,
+	},
+	{
+		q:   "Is it a horse?",
+		id:  2,
+		yes: 0, // how do we signify a win?
+		no:  3,
+	},
+	{
+		q:   "Is it a snake?",
+		id:  3,
+		yes: 0,   // how do we signify a win?
+		no:  100, // what if there are no more questions, user wins
+	},
+}
 
 func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 	scanner := bufio.NewScanner(r)
@@ -61,4 +61,8 @@ func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 	default:
 		return "", fmt.Errorf("Unexpected input: %s", input)
 	}
+}
+
+func (q question) GameQuestions(int, error) {
+
 }
