@@ -21,31 +21,31 @@ func New() game {
 	}
 }
 
-type question struct {
-	q   string
-	id  int
-	yes int // what question is next, if answer is yes
-	no  int // what question is next, if answer is no
+type Question struct {
+	Q   string
+	Id  int
+	Yes int // what question is next, if answer is yes
+	No  int // what question is next, if answer is no
 }
 
-var questions = []question{
+var questions = []Question{
 	{
-		q:   "Does it have 4 legs",
-		id:  1,
-		yes: 2,
-		no:  3,
+		Q:   "Does it have 4 legs",
+		Id:  1,
+		Yes: 2,
+		No:  3,
 	},
 	{
-		q:   "Is it a horse?",
-		id:  2,
-		yes: 0, // how do we signify a win?
-		no:  3,
+		Q:   "Is it a horse?",
+		Id:  2,
+		Yes: 0, // how do we signify a win?
+		No:  3,
 	},
 	{
-		q:   "Is it a snake?",
-		id:  3,
-		yes: 0,   // how do we signify a win?
-		no:  100, // what if there are no more questions, user wins
+		Q:   "Is it a snake?",
+		Id:  3,
+		Yes: 0,   // how do we signify a win?
+		No:  100, // what if there are no more questions, user wins
 	},
 }
 
@@ -63,6 +63,7 @@ func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 	}
 }
 
-func (q question) GameQuestions(int, error) {
+func GameQuestions(q Question) (int, error) {
 
+	return 1, nil
 }
