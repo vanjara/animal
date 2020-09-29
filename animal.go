@@ -13,40 +13,18 @@ const (
 
 type game struct {
 	Running bool
+	Data    map[string]Question
 }
 
-func New() game {
+func NewGame() game {
 	return game{
 		Running: true,
 	}
 }
 
 type Question struct {
-	Q   string
-	Id  int
-	Yes int // what question is next, if answer is yes
-	No  int // what question is next, if answer is no
-}
-
-var questions = []Question{
-	{
-		Q:   "Does it have 4 legs",
-		Id:  1,
-		Yes: 2,
-		No:  3,
-	},
-	{
-		Q:   "Is it a horse?",
-		Id:  2,
-		Yes: 0, // how do we signify a win?
-		No:  3,
-	},
-	{
-		Q:   "Is it a snake?",
-		Id:  3,
-		Yes: 0,   // how do we signify a win?
-		No:  100, // what if there are no more questions, user wins
-	},
+	Yes string // what question is next, if answer is yes
+	No  string // what question is next, if answer is no
 }
 
 func GetUserYesOrNo(question string, r io.Reader) (string, error) {
@@ -63,7 +41,11 @@ func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 	}
 }
 
-func GameQuestions(q Question) (int, error) {
+func NextQuestion(q string, r string) string {
 
-	return 1, nil
+	if r == AnswerYes {
+		return "Does it have stripes?"
+	}
+	return "Is it a snake?"
+
 }
