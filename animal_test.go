@@ -45,38 +45,41 @@ func TestGetUserYesOrNo(t *testing.T) {
 
 func TestGameQuestions(t *testing.T) {
 	t.Parallel()
-	input := animal.Question{
-		Q:   "Does it have 4 legs",
-		Id:  0,
-		Yes: 1,
-		No:  1,
+
+	testCases := []struct {
+		want          int
+		errorExpected bool
+		input         animal.Question
+	}{
+		{
+			want: 1,
+			input: animal.Question{
+				Q:   "Does it have 4 legs?",
+				Yes: 2,
+			},
+		},
+		{
+			want: 1,
+			input: animal.Question{
+				Q:   "Is it a horse?",
+				Yes: 2,
+			},
+		},
+		{
+			want: 1,
+			input: animal.Question{
+				Q:   "Is it a snake?",
+				Yes: 2,
+			},
+		},
 	}
-	var errorExpected bool
-	want := 1
-	got, err := animal.GameQuestions(input)
-	if errorExpected != (err != nil) {
-		t.Fatalf("Give input %q, unexpected error Status: %v", input.Q, err)
+	for _, tc := range testCases {
+		got, err := animal.GameQuestions(tc.input)
+		if tc.errorExpected != (err != nil) {
+			t.Fatalf("Give input %q, unexpected error Status: %v", tc.input.Q, err)
+		}
+		if !tc.errorExpected && tc.want != got {
+			t.Errorf("Given input: %q, want %q, got %q\n", tc.input.Q, tc.want, got)
+		}
 	}
-	if !errorExpected && want != got {
-		t.Errorf("Given input: %q, want %q, got %q\n", input.Q, want, got)
-	}
-	// testCases := []struct {
-	// 	input1        string
-	// 	yes           int
-	// 	no            int
-	// 	want          int
-	// 	errorExpected bool
-	// }{
-	// 	{input1: "Does it have 4 legs", yes: 2, want: 2},
-	// 	{input1: "Is it a horse", yes: 0, want: 0},
-	// }
-	// for _, tc := range testCases {
-	// 	got, err := animal.GameQuestions(input)
-	// 	if tc.errorExpected != (err != nil) {
-	// 		t.Fatalf("Give input %q, unexpected error Status: %v", tc.input1, err)
-	// 	}
-	// 	if !tc.errorExpected && tc.want != got {
-	// 		t.Errorf("Given input: %q, want %q, got %q\n", tc.input1, tc.want, got)
-	// 	}
-	// }
 }
