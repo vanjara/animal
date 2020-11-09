@@ -13,41 +13,19 @@ const (
 
 type game struct {
 	Running bool
+	Data    map[string]Question
 }
 
-func New() game {
+func NewGame() game {
 	return game{
 		Running: true,
 	}
 }
 
-// type question struct{
-// 	q   string,
-// 	id  int,
-// 	yes int, // what question is next, if answer is yes
-// 	no  int // what question is next, if answer is no
-// }
-
-// var questions = []question{
-// 	{
-// 		q: "Does it have 4 legs",
-// 		id: 1
-// 		yes: 2
-// 		no: 3
-// 	}
-// 	{
-// 		q: "Is it a horse?",
-// 		id: 2
-// 		yes: 0 // how do we signify a win?
-// 		no: 3
-// 	}
-// 	{
-// 		q: "Is it a snake?",
-// 		id: 3
-// 		yes: 0 // how do we signify a win?
-// 		no: 100 // what if there are no more questions, user wins
-// 	}
-// }
+type Question struct {
+	Yes string // what question is next, if answer is yes
+	No  string // what question is next, if answer is no
+}
 
 func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 	scanner := bufio.NewScanner(r)
@@ -61,4 +39,13 @@ func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 	default:
 		return "", fmt.Errorf("Unexpected input: %s", input)
 	}
+}
+
+func NextQuestion(q string, r string) string {
+
+	if r == AnswerYes {
+		return "Does it have stripes?"
+	}
+	return "Is it a snake?"
+
 }
