@@ -2,8 +2,10 @@ package animal_test
 
 import (
 	"animal"
+	"io/ioutil"
 	"strings"
 	"testing"
+	"text/template/parse"
 )
 
 func TestNewGame(t *testing.T) {
@@ -108,5 +110,14 @@ func TestNextQuestion(t *testing.T) {
 		if tc.want != got {
 			t.Errorf("Given input: %q, response: %q, want: %q, got: %q\n", tc.question, tc.response, tc.want, got)
 		}
+	}
+}
+
+func TestPlay(t *testing.T) {
+	reader := something that always responds with 'y'
+	writer := ioutil.Discard // just throw away the game output
+	err := animal.Play(reader, writer)
+	if err != nil {
+		t.Error(err)
 	}
 }
