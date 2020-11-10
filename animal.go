@@ -24,6 +24,25 @@ func NewGame() game {
 	}
 }
 
+var Data = map[string]Question{
+	"Does it have 4 legs?": Question{
+		Yes: "Does it have stripes?",
+		No:  "Is it a snake?",
+	},
+	"Does it have stripes?": Question{
+		Yes: "Is it a zebra?",
+		No:  "Is it a lion?",
+	},
+	"Is it a snake?": Question{
+		Yes: AnswerWin,
+		No:  "Is it carnivorous?",
+	},
+	"Is it a zebra?": Question{
+		Yes: AnswerWin,
+		No:  "Is it a Giraffe?",
+	},
+}
+
 type Question struct {
 	Yes string // what question is next, if answer is yes
 	No  string // what question is next, if answer is no
@@ -44,25 +63,6 @@ func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 }
 
 func NextQuestion(q string, r string) string {
-
-	Data := map[string]Question{
-		"Does it have 4 legs?": Question{
-			Yes: "Does it have stripes?",
-			No:  "Is it a snake?",
-		},
-		"Does it have stripes?": Question{
-			Yes: "Is it a zebra?",
-			No:  "Is it a lion?",
-		},
-		"Is it a snake?": Question{
-			Yes: AnswerWin,
-			No:  "Is it carnivorous?",
-		},
-		"Is it a zebra?": Question{
-			Yes: AnswerWin,
-			No:  "Is it a Giraffe?",
-		},
-	}
 
 	if r == AnswerYes {
 		return Data[q].Yes
