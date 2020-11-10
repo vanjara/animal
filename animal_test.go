@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestNew(t *testing.T) {
+func TestNewGame(t *testing.T) {
 	t.Parallel()
 	a := animal.NewGame()
 	if !a.Running {
@@ -50,41 +50,61 @@ func TestNextQuestion(t *testing.T) {
 		question string
 		response string
 		want     string
+		errExpected bool
 	}{
 		{
 			question: "Does it have 4 legs?",
 			response: animal.AnswerYes,
 			want:     "Does it have stripes?",
+			errExpected: false,
 		},
 		{
 			question: "Does it have 4 legs?",
 			response: animal.AnswerNo,
-			want:     "Is it a snake?",
+			want:     "Is it carnivorous?",
+			errExpected: false,
 		},
 		{
 			question: "Does it have stripes?",
 			response: animal.AnswerYes,
 			want:     "Is it a zebra?",
+			errExpected: false,
 		},
 		{
 			question: "Does it have stripes?",
 			response: animal.AnswerNo,
 			want:     "Is it a lion?",
+			errExpected: false,
+		},
+		{
+			question: "Is it a snake?",
+			response: animal.AnswerYes,
+			want:     animal.AnswerWin,
+			errExpected: false,
+		},
+		{
+			question: "Is it a giraffe?",
+			response: animal.AnswerNo,
+			want:     animal.AnswerLose,
+			errExpected: false,
+		},
+		{
+			question: "Is it a lion?",
+			response: animal.AnswerYes,
+			want:     animal.AnswerWin,
+			errExpected: false,
+		},
+		{
+			question: "Is it a bogus non-existent animal?",
+			errExpected: true,
 		},
 	}
 	testGame := animal.NewGame()
-	testGame.Data = map[string]animal.Question{
-		"Does it have 4 legs?": animal.Question{
-			Yes: "Does it have stripes?",
-			No:  "Is it a snake?",
-		},
-		"Does it have stripes?": animal.Question{
-			Yes: "Is it a zebra?",
-			No:  "Is it a lion",
-		},
-	}
 	for _, tc := range testCases {
-		got := animal.NextQuestion(tc.question, tc.response)
+		got, err := testGame.NextQuestion(tc.question, tc.response)
+		if tc.errExpected != (err != nil) {
+			t.Fatalf("Given input: %q, unexpected error status: %v", tc.question, err)
+		}
 		if tc.want != got {
 			t.Errorf("Given input: %q, response: %q, want: %q, got: %q\n", tc.question, tc.response, tc.want, got)
 		}

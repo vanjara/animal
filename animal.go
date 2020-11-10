@@ -21,27 +21,57 @@ type game struct {
 func NewGame() game {
 	return game{
 		Running: true,
+		Data: StartingData,
 	}
 }
 
-var Data = map[string]Question{
+func (g game) NextQuestion(q string, r string) (string, error) {
+	question, ok := g.Data[q]
+	if !ok {
+		return "", fmt.Errorf("no such question %q", q)
+	}
+	if r == AnswerYes {
+		return question.Yes, nil
+	}
+	return question.No, nil
+}
+
+var StartingData = map[string]Question{
 	"Does it have 4 legs?": Question{
 		Yes: "Does it have stripes?",
-		No:  "Is it a snake?",
+		No:  "Is it carnivorous?",
 	},
 	"Does it have stripes?": Question{
 		Yes: "Is it a zebra?",
 		No:  "Is it a lion?",
 	},
-	"Is it a snake?": Question{
-		Yes: AnswerWin,
-		No:  "Is it carnivorous?",
+	"Is it carnivorous?": Question{
+		Yes: "Is it a snake?",
+		No:  "Is it a worm?",
 	},
 	"Is it a zebra?": Question{
 		Yes: AnswerWin,
-		No:  "Is it a Giraffe?",
+		No:  AnswerLose,
+	},
+	"Is it a giraffe?": Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	},
+	"Is it a lion?": Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	},
+	"Is it a snake?": Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	},
+	"Is it a worm?": Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
 	},
 }
+
+var StartingQuestion = "Does it have 4 legs?"
 
 type Question struct {
 	Yes string // what question is next, if answer is yes
@@ -62,11 +92,4 @@ func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 	}
 }
 
-func NextQuestion(q string, r string) string {
 
-	if r == AnswerYes {
-		return Data[q].Yes
-	}
-	return Data[q].No
-
-}
