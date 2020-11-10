@@ -7,8 +7,10 @@ import (
 )
 
 const (
-	AnswerYes = "yes"
-	AnswerNo  = "no"
+	AnswerYes  = "yes"
+	AnswerNo   = "no"
+	AnswerWin  = "I win!!"
+	AnswerLose = "I lose!!"
 )
 
 type game struct {
@@ -20,6 +22,25 @@ func NewGame() game {
 	return game{
 		Running: true,
 	}
+}
+
+var Data = map[string]Question{
+	"Does it have 4 legs?": Question{
+		Yes: "Does it have stripes?",
+		No:  "Is it a snake?",
+	},
+	"Does it have stripes?": Question{
+		Yes: "Is it a zebra?",
+		No:  "Is it a lion?",
+	},
+	"Is it a snake?": Question{
+		Yes: AnswerWin,
+		No:  "Is it carnivorous?",
+	},
+	"Is it a zebra?": Question{
+		Yes: AnswerWin,
+		No:  "Is it a Giraffe?",
+	},
 }
 
 type Question struct {
@@ -44,8 +65,8 @@ func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 func NextQuestion(q string, r string) string {
 
 	if r == AnswerYes {
-		return "Does it have stripes?"
+		return Data[q].Yes
 	}
-	return "Is it a snake?"
+	return Data[q].No
 
 }
