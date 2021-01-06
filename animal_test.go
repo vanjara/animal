@@ -2,8 +2,7 @@ package animal_test
 
 import (
 	"animal"
-	"fmt"
-	"os"
+	"io/ioutil"
 	"strings"
 	"testing"
 )
@@ -49,11 +48,7 @@ func TestGetUserYesOrNo(t *testing.T) {
 func TestMultipleUserInput(t *testing.T) {
 	t.Parallel()
 	// multiple test cases
-	var x = `yes
-	yes`
-	//input := strings.NewReader("yes\nyes\n")
-	input := strings.NewReader(x)
-	fmt.Println("From TEST ", input)
+	input := strings.NewReader("yes\nyes\n")
 	_, err := animal.GetUserYesOrNo("Dummy question?", input)
 	if err != nil {
 		t.Fatalf("Unexpected error Status: %v", err)
@@ -135,13 +130,32 @@ func TestNextQuestion(t *testing.T) {
 func TestPlay(t *testing.T) {
 	testGame := animal.NewGame()
 	input := strings.NewReader("yes\nyes\nyes\n")
-	output := os.Stdout
-	err := testGame.Play(input, output)
+	err := testGame.Play(input, ioutil.Discard)
 	if err != nil {
 		t.Error(err)
 	}
 	if input.Len() != 0 {
 		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
 	}
+}
 
+func TestPlayNewAnimal(t *testing.T) {
+	testGame := animal.NewGame()
+	input := strings.NewReader("yes\nyes\nno\ntiger\nIs it a predator?\nyes")
+	err := testGame.Play(input, ioutil.Discard)
+	if err != nil {
+		t.Error(err)
+	}
+	if input.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
+	}
+	want := "Is it a predator?"
+	if _, ok := testGame.Data[want]; !ok {
+		t.Errorf("Expected %q, did not find the question in the map.", want)
+	}
+	want = "Is it a tiger?"
+	if _, ok := testGame.Data[want]; !ok {
+		t.Errorf("Expected %q, did not find the question in the map.", want)
+	}
+	// Add tests for AnswerYes, AnswerNo
 }

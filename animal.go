@@ -1,10 +1,8 @@
 package animal
 
 import (
-	"bufio"
 	"fmt"
 	"io"
-	"strings"
 )
 
 const (
@@ -40,31 +38,28 @@ func (g game) NextQuestion(q string, r string) (string, error) {
 func (g *game) Play(r io.Reader, w io.Writer) error {
 	question := StartingQuestion
 	for g.Running {
-		fmt.Fprintf(w, question)
-		fmt.Println("Before : Input length remaining ", r.(*strings.Reader).Len())
+		fmt.Fprint(w, question, " ")
 		response, err := GetUserYesOrNo(question, r)
-		fmt.Println("After : Input length remaining ", r.(*strings.Reader).Len())
 		for err != nil {
-			fmt.Fprintf(w, "please answer yes or no")
-			fmt.Fprintf(w, question)
+			fmt.Fprintln(w, "Please answer yes or no: ")
+			fmt.Fprint(w, question, " ")
 			response, err = GetUserYesOrNo(question, r)
-			fmt.Println("Input length remaining ", r.(*strings.Reader).Len())
 		}
 		question, err = g.NextQuestion(question, response)
 		if err != nil {
-			fmt.Fprintf(w, "oh no, internal error! Not your fault!")
+			fmt.Fprintln(w, "oh no, internal error! Not your fault!")
 			return err
 		}
 		switch question {
 		case AnswerWin:
-			fmt.Fprintf(w, "I successfully guessed your animal! Awesome!")
+			fmt.Fprintln(w, "I successfully guessed your animal! Awesome!")
 			g.Running = false
 		case AnswerLose:
-			fmt.Fprintf(w, "You stumped me! Well done!")
+			fmt.Fprintf(w, "You stumped me! Well done!\n")
 			g.Running = false
 		}
 	}
-	fmt.Fprintf(w, "Thanks for playing!")
+	fmt.Fprintln(w, "Thanks for playing!")
 	return nil
 }
 
@@ -111,16 +106,12 @@ type Question struct {
 }
 
 func GetUserYesOrNo(question string, r io.Reader) (string, error) {
-	scanner := bufio.NewScanner(r)
-	scanner.Scan()
-	if scanner.Err() != nil {
-		return "", scanner.Err()
+	var input string
+	_, err := fmt.Fscanln(r, &input)
+	if err != nil {
+		return "", err
 	}
-	for scanner.Scan() {
-		fmt.Println("NEW ", scanner.Text())
-	}
-	input := scanner.Text()
-	fmt.Println("FUNC ", input)
+
 	switch input {
 	case "yes", "y", "YES", "Yes":
 		return AnswerYes, nil
