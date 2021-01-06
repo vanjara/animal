@@ -44,3 +44,6 @@
 # connect the yes/no answer to the new animal
 # other answer will be AnswerLose
 # Replace the AnswerLose with the question that got us here
+
+# Add a Play Again Feature
+# Add the new question to the PlayAgainFeature
