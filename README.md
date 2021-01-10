@@ -24,3 +24,26 @@
 # How does game know about which animals to guess
 # What would be a question bank for the game
 # How will the game remember answers from previous attempts/game runs
+
+# Adding a new animal
+# Is it a Zebra
+# ans is No (You stumped me)
+# Please tell me the animal you were thinking about?
+# Suppose Ans is Tiger
+# What would distinguish zebra from tiger
+# need a yes/no question
+# Is it a predator?
+# We should ask this question to the user for a tiger?
+# Does it have 4 legs?
+# Does it have stripes?
+# Is it a predator?
+# Ans is Tiger
+
+# Add the new question to the map
+# Add the new animal to the map
+# connect the yes/no answer to the new animal
+# other answer will be AnswerLose
+# Replace the AnswerLose with the question that got us here
+
+# Add a Play Again Feature
+# Add the new question to the PlayAgainFeature

@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"strings"
 	"testing"
-	"text/template/parse"
 )
 
 func TestNewGame(t *testing.T) {
@@ -32,6 +31,7 @@ func TestGetUserYesOrNo(t *testing.T) {
 		{input: "n", want: "no"},
 		{input: "NO", want: "no"},
 		{input: "No", want: "no"},
+		{input: "", want: "", errorExpected: true},
 		{input: "Bogus", want: "no", errorExpected: true},
 	}
 	for _, tc := range testCases {
@@ -45,59 +45,73 @@ func TestGetUserYesOrNo(t *testing.T) {
 	}
 }
 
+func TestMultipleUserInput(t *testing.T) {
+	t.Parallel()
+	// multiple test cases
+	input := strings.NewReader("yes\nyes\n")
+	_, err := animal.GetUserYesOrNo("Dummy question?", input)
+	if err != nil {
+		t.Fatalf("Unexpected error Status: %v", err)
+	}
+	_, err = animal.GetUserYesOrNo("Dummy question?", input)
+	if err != nil {
+		t.Fatalf("Unexpected error Status: %v", err)
+	}
+}
+
 func TestNextQuestion(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
-		question string
-		response string
-		want     string
+		question    string
+		response    string
+		want        string
 		errExpected bool
 	}{
 		{
-			question: "Does it have 4 legs?",
-			response: animal.AnswerYes,
-			want:     "Does it have stripes?",
+			question:    "Does it have 4 legs?",
+			response:    animal.AnswerYes,
+			want:        "Does it have stripes?",
 			errExpected: false,
 		},
 		{
-			question: "Does it have 4 legs?",
-			response: animal.AnswerNo,
-			want:     "Is it carnivorous?",
+			question:    "Does it have 4 legs?",
+			response:    animal.AnswerNo,
+			want:        "Is it carnivorous?",
 			errExpected: false,
 		},
 		{
-			question: "Does it have stripes?",
-			response: animal.AnswerYes,
-			want:     "Is it a zebra?",
+			question:    "Does it have stripes?",
+			response:    animal.AnswerYes,
+			want:        "Is it a zebra?",
 			errExpected: false,
 		},
 		{
-			question: "Does it have stripes?",
-			response: animal.AnswerNo,
-			want:     "Is it a lion?",
+			question:    "Does it have stripes?",
+			response:    animal.AnswerNo,
+			want:        "Is it a lion?",
 			errExpected: false,
 		},
 		{
-			question: "Is it a snake?",
-			response: animal.AnswerYes,
-			want:     animal.AnswerWin,
+			question:    "Is it a snake?",
+			response:    animal.AnswerYes,
+			want:        animal.AnswerWin,
 			errExpected: false,
 		},
 		{
-			question: "Is it a giraffe?",
-			response: animal.AnswerNo,
-			want:     animal.AnswerLose,
+			question:    "Is it a giraffe?",
+			response:    animal.AnswerNo,
+			want:        animal.AnswerLose,
 			errExpected: false,
 		},
 		{
-			question: "Is it a lion?",
-			response: animal.AnswerYes,
-			want:     animal.AnswerWin,
+			question:    "Is it a lion?",
+			response:    animal.AnswerYes,
+			want:        animal.AnswerWin,
 			errExpected: false,
 		},
 		{
-			question: "Is it a bogus non-existent animal?",
+			question:    "Is it a bogus non-existent animal?",
 			errExpected: true,
 		},
 	}
@@ -114,10 +128,34 @@ func TestNextQuestion(t *testing.T) {
 }
 
 func TestPlay(t *testing.T) {
-	reader := something that always responds with 'y'
-	writer := ioutil.Discard // just throw away the game output
-	err := animal.Play(reader, writer)
+	testGame := animal.NewGame()
+	input := strings.NewReader("yes\nyes\nyes\n")
+	err := testGame.Play(input, ioutil.Discard)
 	if err != nil {
 		t.Error(err)
 	}
+	if input.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
+	}
+}
+
+func TestPlayNewAnimal(t *testing.T) {
+	testGame := animal.NewGame()
+	input := strings.NewReader("yes\nyes\nno\ntiger\nIs it a predator?\nyes")
+	err := testGame.Play(input, ioutil.Discard)
+	if err != nil {
+		t.Error(err)
+	}
+	if input.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
+	}
+	want := "Is it a predator?"
+	if _, ok := testGame.Data[want]; !ok {
+		t.Errorf("Expected %q, did not find the question in the map.", want)
+	}
+	want = "Is it a tiger?"
+	if _, ok := testGame.Data[want]; !ok {
+		t.Errorf("Expected %q, did not find the question in the map.", want)
+	}
+	// Add tests for AnswerYes, AnswerNo
 }

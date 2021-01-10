@@ -1,7 +1,6 @@
 package animal
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 )
@@ -21,7 +20,7 @@ type game struct {
 func NewGame() game {
 	return game{
 		Running: true,
-		Data: StartingData,
+		Data:    StartingData,
 	}
 }
 
@@ -34,6 +33,34 @@ func (g game) NextQuestion(q string, r string) (string, error) {
 		return question.Yes, nil
 	}
 	return question.No, nil
+}
+
+func (g *game) Play(r io.Reader, w io.Writer) error {
+	question := StartingQuestion
+	for g.Running {
+		fmt.Fprint(w, question, " ")
+		response, err := GetUserYesOrNo(question, r)
+		for err != nil {
+			fmt.Fprintln(w, "Please answer yes or no: ")
+			fmt.Fprint(w, question, " ")
+			response, err = GetUserYesOrNo(question, r)
+		}
+		question, err = g.NextQuestion(question, response)
+		if err != nil {
+			fmt.Fprintln(w, "oh no, internal error! Not your fault!")
+			return err
+		}
+		switch question {
+		case AnswerWin:
+			fmt.Fprintln(w, "I successfully guessed your animal! Awesome!")
+			g.Running = false
+		case AnswerLose:
+			fmt.Fprintf(w, "You stumped me! Well done!\n")
+			g.Running = false
+		}
+	}
+	fmt.Fprintln(w, "Thanks for playing!")
+	return nil
 }
 
 var StartingData = map[string]Question{
@@ -79,17 +106,18 @@ type Question struct {
 }
 
 func GetUserYesOrNo(question string, r io.Reader) (string, error) {
-	scanner := bufio.NewScanner(r)
-	scanner.Scan()
-	input := scanner.Text()
+	var input string
+	_, err := fmt.Fscanln(r, &input)
+	if err != nil {
+		return "", err
+	}
+
 	switch input {
 	case "yes", "y", "YES", "Yes":
 		return AnswerYes, nil
 	case "no", "n", "NO", "No":
 		return AnswerNo, nil
 	default:
-		return "", fmt.Errorf("Unexpected input: %s", input)
+		return "", fmt.Errorf("Unexpected input: %q", input)
 	}
 }
-
-
