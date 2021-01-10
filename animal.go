@@ -6,9 +6,13 @@ import (
 )
 
 const (
-	AnswerYes  = "yes"
-	AnswerNo   = "no"
-	AnswerWin  = "I win!!"
+	// AnswerYes is Yes
+	AnswerYes = "yes"
+	// AnswerNo is No
+	AnswerNo = "no"
+	// AnswerWin is I win
+	AnswerWin = "I win!!"
+	// AnswerLose is I lose
 	AnswerLose = "I lose!!"
 )
 
@@ -17,6 +21,7 @@ type game struct {
 	Data    map[string]Question
 }
 
+// NewGame ...
 func NewGame() game {
 	return game{
 		Running: true,
@@ -24,6 +29,7 @@ func NewGame() game {
 	}
 }
 
+// NextQuestion ...
 func (g game) NextQuestion(q string, r string) (string, error) {
 	question, ok := g.Data[q]
 	if !ok {
@@ -63,6 +69,7 @@ func (g *game) Play(r io.Reader, w io.Writer) error {
 	return nil
 }
 
+// StartingData ...
 var StartingData = map[string]Question{
 	"Does it have 4 legs?": Question{
 		Yes: "Does it have stripes?",
@@ -98,13 +105,16 @@ var StartingData = map[string]Question{
 	},
 }
 
+// StartingQuestion ...
 var StartingQuestion = "Does it have 4 legs?"
 
+// Question ...
 type Question struct {
 	Yes string // what question is next, if answer is yes
 	No  string // what question is next, if answer is no
 }
 
+// GetUserYesOrNo ...
 func GetUserYesOrNo(question string, r io.Reader) (string, error) {
 	var input string
 	_, err := fmt.Fscanln(r, &input)
