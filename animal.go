@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 )
 
 const (
@@ -83,7 +82,7 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer) {
 	// var newq string
 	// _, _ = fmt.Fscanln(r, &newq)
 	// fmt.Println(newq)
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(r)
 	scanner.Scan()
 	newq := scanner.Text()
 	fmt.Println("New question is - ", newq)
@@ -93,7 +92,7 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer) {
 	// _, _ = fmt.Fscanln(r, &ans)
 	// fmt.Println("Ans - ", ans)
 
-	scanner2 := bufio.NewScanner(os.Stdin)
+	scanner2 := bufio.NewScanner(r)
 	scanner2.Scan()
 	ans := scanner2.Text()
 	fmt.Println("Ans is", ans)
