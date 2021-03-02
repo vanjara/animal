@@ -77,11 +77,7 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer) {
 	_, _ = fmt.Fscanln(r, &input)
 
 	fmt.Fprintf(w, "What would be a Yes/No question to distinguish %s from other animals: ", input)
-	fmt.Println("input is", input)
-	//need to use bufio.scanner here
-	// var newq string
-	// _, _ = fmt.Fscanln(r, &newq)
-	// fmt.Println(newq)
+
 	scanner := bufio.NewScanner(r)
 	scanner.Scan()
 	newq := scanner.Text()
@@ -92,7 +88,7 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer) {
 	scanner2 := bufio.NewScanner(r)
 	scanner2.Scan()
 	ans := scanner2.Text()
-	fmt.Println("Ans is", ans)
+	fmt.Println("Ans is ", ans)
 
 	addQuestion := "Is it a " + input + "?"
 	StartingData[newq] = Question{

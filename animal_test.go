@@ -145,7 +145,7 @@ func TestPlay(t *testing.T) {
 func TestPlayNewAnimal(t *testing.T) {
 	testGame := animal.NewGame()
 	input := strings.NewReader("yes\nyes\nno\ntiger\nIs it a predator?\nyes\n")
-	//input := bytes.NewBufferString("yes\nyes\nno\ntiger\nIs it a predator?\nyes\n")
+
 	err := testGame.Play(input, ioutil.Discard)
 	if err != nil {
 		t.Error(err)
