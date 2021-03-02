@@ -88,23 +88,23 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer) {
 	fmt.Println("New question is - ", newq)
 
 	fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", newq, input)
-	// var ans string
-	// _, _ = fmt.Fscanln(r, &ans)
-	// fmt.Println("Ans - ", ans)
 
 	scanner2 := bufio.NewScanner(r)
 	scanner2.Scan()
 	ans := scanner2.Text()
 	fmt.Println("Ans is", ans)
-	// q1 := ("New question is ")
-	// q2 := ("What is the answer to the new question")
-	// for fmt.Println(q1); scanner.Scan(); fmt.Println(q2) {
-	// 	line := scanner.Text()
-	// 	fmt.Printf("Line %q\n", line)
-	// 	if len(line) == 0 {
-	// 		break
-	// 	}
-	// }
+
+	addQuestion := "Is it a " + input + "?"
+	StartingData[newq] = Question{
+		Yes: addQuestion,
+		No:  "Is it a zebra?", // we need to find this automatically
+	}
+	StartingData[addQuestion] = Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	}
+	fmt.Println(StartingData)
+
 }
 
 // StartingData ...
