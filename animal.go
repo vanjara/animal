@@ -1,6 +1,7 @@
 package animal
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 )
@@ -45,11 +46,11 @@ func (g *game) Play(r io.Reader, w io.Writer) error {
 	question := StartingQuestion
 	for g.Running {
 		fmt.Fprint(w, question, " ")
-		response, err := GetUserYesOrNo(question, r)
+		response, err := GetUserYesOrNo(r)
 		for err != nil {
 			fmt.Fprintln(w, "Please answer yes or no: ")
 			fmt.Fprint(w, question, " ")
-			response, err = GetUserYesOrNo(question, r)
+			response, err = GetUserYesOrNo(r)
 		}
 		question, err = g.NextQuestion(question, response)
 		if err != nil {
@@ -62,11 +63,48 @@ func (g *game) Play(r io.Reader, w io.Writer) error {
 			g.Running = false
 		case AnswerLose:
 			fmt.Fprintf(w, "You stumped me! Well done!\n")
+			g.LearnNewAnimal(r, w)
 			g.Running = false
 		}
 	}
 	fmt.Fprintln(w, "Thanks for playing!")
 	return nil
+}
+
+func (g game) LearnNewAnimal(r io.Reader, w io.Writer) {
+	var input string
+	fmt.Fprintln(w, "Please tell me the animal you were thinking about: ")
+	_, _ = fmt.Fscanln(r, &input)
+
+	fmt.Fprintf(w, "What would be a Yes/No question to distinguish %s from other animals: ", input)
+	fmt.Println("input is", input)
+	//need to use bufio.scanner here
+	// var newq string
+	// _, _ = fmt.Fscanln(r, &newq)
+	// fmt.Println(newq)
+	scanner := bufio.NewScanner(r)
+	scanner.Scan()
+	newq := scanner.Text()
+	fmt.Println("New question is - ", newq)
+
+	fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", newq, input)
+
+	scanner2 := bufio.NewScanner(r)
+	scanner2.Scan()
+	ans := scanner2.Text()
+	fmt.Println("Ans is", ans)
+
+	addQuestion := "Is it a " + input + "?"
+	StartingData[newq] = Question{
+		Yes: addQuestion,
+		No:  "Is it a zebra?", // we need to find this automatically
+	}
+	StartingData[addQuestion] = Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	}
+	fmt.Println(StartingData)
+
 }
 
 // StartingData ...
@@ -115,7 +153,7 @@ type Question struct {
 }
 
 // GetUserYesOrNo ...
-func GetUserYesOrNo(question string, r io.Reader) (string, error) {
+func GetUserYesOrNo(r io.Reader) (string, error) {
 	var input string
 	_, err := fmt.Fscanln(r, &input)
 	if err != nil {
