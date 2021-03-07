@@ -44,6 +44,7 @@ func (g game) NextQuestion(q string, r string) (string, error) {
 
 func (g *game) Play(r io.Reader, w io.Writer) error {
 	question := StartingQuestion
+	var prev1, prev2 string
 	for g.Running {
 		fmt.Fprint(w, question, " ")
 		response, err := GetUserYesOrNo(r)
@@ -52,18 +53,21 @@ func (g *game) Play(r io.Reader, w io.Writer) error {
 			fmt.Fprint(w, question, " ")
 			response, err = GetUserYesOrNo(r)
 		}
+		prev2 = prev1
+		prev1 = question
 		question, err = g.NextQuestion(question, response)
 		if err != nil {
 			fmt.Fprintln(w, "oh no, internal error! Not your fault!")
 			return err
 		}
+
 		switch question {
 		case AnswerWin:
 			fmt.Fprintln(w, "I successfully guessed your animal! Awesome!")
 			g.Running = false
 		case AnswerLose:
 			fmt.Fprintf(w, "You stumped me! Well done!\n")
-			g.LearnNewAnimal(r, w)
+			g.LearnNewAnimal(r, w, prev2)
 			g.Running = false
 		}
 	}
@@ -71,7 +75,7 @@ func (g *game) Play(r io.Reader, w io.Writer) error {
 	return nil
 }
 
-func (g game) LearnNewAnimal(r io.Reader, w io.Writer) {
+func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	var input string
 	fmt.Fprintln(w, "Please tell me the animal you were thinking about: ")
 	_, _ = fmt.Fscanln(r, &input)
@@ -91,15 +95,18 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer) {
 	fmt.Println("Ans is ", ans)
 
 	addQuestion := "Is it a " + input + "?"
-	StartingData[newq] = Question{
+	g.Data[newq] = Question{
 		Yes: addQuestion,
-		No:  "Is it a zebra?", // we need to find this automatically
+		No:  g.Data[pq].Yes, // we need to find this automatically
 	}
-	StartingData[addQuestion] = Question{
+	temp := g.Data[pq]
+	temp.Yes = newq
+	g.Data[pq] = temp
+
+	g.Data[addQuestion] = Question{
 		Yes: AnswerWin,
 		No:  AnswerLose,
 	}
-	fmt.Println(StartingData)
 
 }
 
