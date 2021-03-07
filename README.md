@@ -47,3 +47,56 @@
 
 # Add a Play Again Feature
 # Add the new question to the PlayAgainFeature
+
+# var StartingData = map[string]Question{
+	"Does it have 4 legs?": Question{
+		Yes: "Does it have stripes?",
+		No:  "Is it carnivorous?",
+	},
+	<!-- "Does it have stripes?": Question{
+		Yes: "Is it a zebra?",
+		No:  "Is it a lion?",
+	}, -->
+    "Does it have stripes?": Question{
+        Yes: "Is it a predator?",
+        No: "Is it a lion?"
+    }
+    "Is it a predator?": Question{
+        Yes: "Is it a tiger?",
+        No: "Is it a zebra?"
+    }
+	"Is it carnivorous?": Question{
+		Yes: "Is it a snake?",
+		No:  "Is it a worm?",
+	},
+	"Is it a zebra?": Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	},	
+    "Is it a tiger?": Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	},
+
+	"Is it a giraffe?": Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	},
+	"Is it a lion?": Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	},
+	"Is it a snake?": Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	},
+	"Is it a worm?": Question{
+		Yes: AnswerWin,
+		No:  AnswerLose,
+	},
+
+# Read Starting Data from a file (any format)
+# Then write new data to the file for future runs
+# Move replay logic to the game (not in Main)
+# Future versions - play it in a browser?
+# auto deployment somewhere?
