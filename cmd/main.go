@@ -10,6 +10,6 @@ func main() {
 	for playing {
 		g := animal.NewGame()
 		g.Play(os.Stdin, os.Stdout)
-		playing = animal.Replay()
+		playing = animal.Replay(os.Stdin)
 	}
 }

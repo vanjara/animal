@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 )
 
 const (
@@ -156,11 +155,11 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 }
 
 // Replay ... to replay the game
-func Replay() bool {
+func Replay(r io.Reader) bool {
 	fmt.Print("Would you like to play again (y/n)? ")
 	var replay string
-	_, _ = fmt.Fscanln(os.Stdin, &replay)
-	if replay == "y" {
+	replay, _ = GetUserYesOrNo(r)
+	if replay == AnswerYes {
 		return true
 	}
 	fmt.Println("Thanks for playing!")

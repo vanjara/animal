@@ -73,6 +73,7 @@ func TestMultipleUserInput(t *testing.T) {
 
 func TestNextQuestion(t *testing.T) {
 	t.Parallel()
+	testGame := animal.NewGame()
 	testCases := []struct {
 		question    string
 		response    string
@@ -126,9 +127,9 @@ func TestNextQuestion(t *testing.T) {
 			errExpected: true,
 		},
 	}
-	testGame := animal.NewGame()
 	for _, tc := range testCases {
 		got, err := testGame.NextQuestion(tc.question, tc.response)
+		//fmt.Printf("Given input: %q, response: %q, want: %q, got: %q\n", tc.question, tc.response, tc.want, got)
 		if tc.errExpected != (err != nil) {
 			t.Fatalf("Given input: %q, unexpected error status: %v", tc.question, err)
 		}
