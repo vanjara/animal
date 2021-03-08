@@ -15,6 +15,18 @@ func TestNewGame(t *testing.T) {
 	}
 }
 
+func TestPlay(t *testing.T) {
+	t.Parallel()
+	testGame := animal.NewGame()
+	input := strings.NewReader("yes\nyes\nyes\n")
+	err := testGame.Play(input, ioutil.Discard)
+	if err != nil {
+		t.Error(err)
+	}
+	if input.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
+	}
+}
 func TestGetUserYesOrNo(t *testing.T) {
 	t.Parallel()
 	// multiple test cases
@@ -64,7 +76,6 @@ func TestMultipleUserInput(t *testing.T) {
 
 func TestNextQuestion(t *testing.T) {
 	t.Parallel()
-
 	testCases := []struct {
 		question    string
 		response    string
@@ -130,19 +141,8 @@ func TestNextQuestion(t *testing.T) {
 	}
 }
 
-func TestPlay(t *testing.T) {
-	testGame := animal.NewGame()
-	input := strings.NewReader("yes\nyes\nyes\n")
-	err := testGame.Play(input, ioutil.Discard)
-	if err != nil {
-		t.Error(err)
-	}
-	if input.Len() != 0 {
-		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
-	}
-}
-
 func TestPlayNewAnimal(t *testing.T) {
+	t.Parallel()
 	testGame := animal.NewGame()
 	input := strings.NewReader("yes\nyes\nno\ntiger\nIs it a predator?\nyes\n")
 
@@ -161,5 +161,4 @@ func TestPlayNewAnimal(t *testing.T) {
 	if _, ok := testGame.Data[want]; !ok {
 		t.Errorf("Expected %q, did not find the question in the map.", want)
 	}
-	// Add tests for AnswerYes, AnswerNo
 }
