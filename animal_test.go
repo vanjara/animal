@@ -47,7 +47,6 @@ func TestGetUserYesOrNo(t *testing.T) {
 		{input: "Bogus", want: "no", errorExpected: true},
 	}
 	for _, tc := range testCases {
-		//got, err := animal.GetUserYesOrNo("Dummy question?", strings.NewReader(tc.input))
 		got, err := animal.GetUserYesOrNo(strings.NewReader(tc.input))
 		if tc.errorExpected != (err != nil) {
 			t.Fatalf("Give input %q, unexpected error Status: %v", tc.input, err)
@@ -62,12 +61,10 @@ func TestMultipleUserInput(t *testing.T) {
 	t.Parallel()
 	// multiple test cases
 	input := strings.NewReader("yes\nyes\n")
-	//_, err := animal.GetUserYesOrNo("Dummy question?", input)
 	_, err := animal.GetUserYesOrNo(input)
 	if err != nil {
 		t.Fatalf("Unexpected error Status: %v", err)
 	}
-	//_, err = animal.GetUserYesOrNo("Dummy question?", input)
 	_, err2 := animal.GetUserYesOrNo(input)
 	if err2 != nil {
 		t.Fatalf("Unexpected error Status: %v", err2)
