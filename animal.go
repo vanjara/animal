@@ -105,7 +105,6 @@ func NewGame() game {
 			No:  AnswerLose,
 		},
 	}
-
 	return game{
 		Running: true,
 		Data:    StartingData,
@@ -176,7 +175,7 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	scanner2 := bufio.NewScanner(r)
 	scanner2.Scan()
 	ans := scanner2.Text()
-	fmt.Fprintf(w, "The answer is %s", ans)
+	fmt.Fprintf(w, "The answer is %s\n", ans)
 
 	addQuestion := "Is it a " + input + "?"
 	g.Data[newq] = Question{
