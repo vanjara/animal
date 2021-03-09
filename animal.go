@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"sync"
 )
 
 const (
@@ -24,40 +25,40 @@ type Question struct {
 }
 
 // StartingData ...
-var StartingData = map[string]Question{
-	"Does it have 4 legs?": Question{
-		Yes: "Does it have stripes?",
-		No:  "Is it carnivorous?",
-	},
-	"Does it have stripes?": Question{
-		Yes: "Is it a zebra?",
-		No:  "Is it a lion?",
-	},
-	"Is it carnivorous?": Question{
-		Yes: "Is it a snake?",
-		No:  "Is it a worm?",
-	},
-	"Is it a zebra?": Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
-	},
-	"Is it a giraffe?": Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
-	},
-	"Is it a lion?": Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
-	},
-	"Is it a snake?": Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
-	},
-	"Is it a worm?": Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
-	},
-}
+// var StartingData = map[string]Question{
+// 	"Does it have 4 legs?": Question{
+// 		Yes: "Does it have stripes?",
+// 		No:  "Is it carnivorous?",
+// 	},
+// 	"Does it have stripes?": Question{
+// 		Yes: "Is it a zebra?",
+// 		No:  "Is it a lion?",
+// 	},
+// 	"Is it carnivorous?": Question{
+// 		Yes: "Is it a snake?",
+// 		No:  "Is it a worm?",
+// 	},
+// 	"Is it a zebra?": Question{
+// 		Yes: AnswerWin,
+// 		No:  AnswerLose,
+// 	},
+// 	"Is it a giraffe?": Question{
+// 		Yes: AnswerWin,
+// 		No:  AnswerLose,
+// 	},
+// 	"Is it a lion?": Question{
+// 		Yes: AnswerWin,
+// 		No:  AnswerLose,
+// 	},
+// 	"Is it a snake?": Question{
+// 		Yes: AnswerWin,
+// 		No:  AnswerLose,
+// 	},
+// 	"Is it a worm?": Question{
+// 		Yes: AnswerWin,
+// 		No:  AnswerLose,
+// 	},
+// }
 
 // StartingQuestion ...
 var StartingQuestion = "Does it have 4 legs?"
@@ -65,10 +66,46 @@ var StartingQuestion = "Does it have 4 legs?"
 type game struct {
 	Running bool
 	Data    map[string]Question
+	mu      sync.Mutex
 }
 
 // NewGame ...
 func NewGame() game {
+	var StartingData = map[string]Question{
+		"Does it have 4 legs?": Question{
+			Yes: "Does it have stripes?",
+			No:  "Is it carnivorous?",
+		},
+		"Does it have stripes?": Question{
+			Yes: "Is it a zebra?",
+			No:  "Is it a lion?",
+		},
+		"Is it carnivorous?": Question{
+			Yes: "Is it a snake?",
+			No:  "Is it a worm?",
+		},
+		"Is it a zebra?": Question{
+			Yes: AnswerWin,
+			No:  AnswerLose,
+		},
+		"Is it a giraffe?": Question{
+			Yes: AnswerWin,
+			No:  AnswerLose,
+		},
+		"Is it a lion?": Question{
+			Yes: AnswerWin,
+			No:  AnswerLose,
+		},
+		"Is it a snake?": Question{
+			Yes: AnswerWin,
+			No:  AnswerLose,
+		},
+		"Is it a worm?": Question{
+			Yes: AnswerWin,
+			No:  AnswerLose,
+		},
+	}
+
 	return game{
 		Running: true,
 		Data:    StartingData,
@@ -87,7 +124,8 @@ func (g game) NextQuestion(q string, r string) (string, error) {
 	return question.No, nil
 }
 
-func (g *game) Play(r io.Reader, w io.Writer) error {
+func (g game) Play(r io.Reader, w io.Writer) error {
+	//g.mu.Lock()
 	question := StartingQuestion
 	var prev1, prev2 string
 
@@ -117,10 +155,12 @@ func (g *game) Play(r io.Reader, w io.Writer) error {
 			g.Running = false
 		}
 	}
+	//g.mu.Unlock()
 	return nil
 }
 
 func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
+	//g.mu.Lock()
 	var input string
 	fmt.Fprintln(w, "Please tell me the animal you were thinking about: ")
 	_, _ = fmt.Fscanln(r, &input)
@@ -151,6 +191,8 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 		Yes: AnswerWin,
 		No:  AnswerLose,
 	}
+	//defer g.mu.Unlock()
+	//g.mu.Unlock()
 
 }
 
