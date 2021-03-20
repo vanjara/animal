@@ -17,20 +17,63 @@ const (
 	AnswerLose = "I lose!!"
 )
 
+// Question struct to map to the Yes and No responses
+type Question struct {
+	Yes string // what question is next, if answer is yes
+	No  string // what question is next, if answer is no
+}
+
+// StartingQuestion - This is the first Question
+var StartingQuestion = "Does it have 4 legs?"
+
 type game struct {
 	Running bool
 	Data    map[string]Question
 }
 
-// NewGame ...
+// NewGame - Initializing a new game with Starting Data and Running State
 func NewGame() game {
+	var StartingData = map[string]Question{
+		"Does it have 4 legs?": Question{
+			Yes: "Does it have stripes?",
+			No:  "Is it carnivorous?",
+		},
+		"Does it have stripes?": Question{
+			Yes: "Is it a zebra?",
+			No:  "Is it a lion?",
+		},
+		"Is it carnivorous?": Question{
+			Yes: "Is it a snake?",
+			No:  "Is it a worm?",
+		},
+		"Is it a zebra?": Question{
+			Yes: AnswerWin,
+			No:  AnswerLose,
+		},
+		"Is it a giraffe?": Question{
+			Yes: AnswerWin,
+			No:  AnswerLose,
+		},
+		"Is it a lion?": Question{
+			Yes: AnswerWin,
+			No:  AnswerLose,
+		},
+		"Is it a snake?": Question{
+			Yes: AnswerWin,
+			No:  AnswerLose,
+		},
+		"Is it a worm?": Question{
+			Yes: AnswerWin,
+			No:  AnswerLose,
+		},
+	}
 	return game{
 		Running: true,
 		Data:    StartingData,
 	}
 }
 
-// NextQuestion ...
+// NextQuestion - Function to ask the Next Question
 func (g game) NextQuestion(q string, r string) (string, error) {
 	question, ok := g.Data[q]
 	if !ok {
@@ -42,9 +85,11 @@ func (g game) NextQuestion(q string, r string) (string, error) {
 	return question.No, nil
 }
 
-func (g *game) Play(r io.Reader, w io.Writer) error {
+// Play - This is the actual game Play function
+func (g game) Play(r io.Reader, w io.Writer) error {
 	question := StartingQuestion
 	var prev1, prev2 string
+
 	for g.Running {
 		fmt.Fprint(w, question, " ")
 		response, err := GetUserYesOrNo(r)
@@ -71,10 +116,10 @@ func (g *game) Play(r io.Reader, w io.Writer) error {
 			g.Running = false
 		}
 	}
-	fmt.Fprintln(w, "Thanks for playing!")
 	return nil
 }
 
+// LearnNewAnimal - Function to learn the question to add for new animal
 func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	var input string
 	fmt.Fprintln(w, "Please tell me the animal you were thinking about: ")
@@ -85,19 +130,18 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	scanner := bufio.NewScanner(r)
 	scanner.Scan()
 	newq := scanner.Text()
-	fmt.Println("New question is - ", newq)
 
 	fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", newq, input)
 
 	scanner2 := bufio.NewScanner(r)
 	scanner2.Scan()
 	ans := scanner2.Text()
-	fmt.Println("Ans is ", ans)
+	fmt.Fprintf(w, "The answer is %s\n", ans)
 
 	addQuestion := "Is it a " + input + "?"
 	g.Data[newq] = Question{
 		Yes: addQuestion,
-		No:  g.Data[pq].Yes, // we need to find this automatically
+		No:  g.Data[pq].Yes,
 	}
 	temp := g.Data[pq]
 	temp.Yes = newq
@@ -107,55 +151,21 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 		Yes: AnswerWin,
 		No:  AnswerLose,
 	}
-
 }
 
-// StartingData ...
-var StartingData = map[string]Question{
-	"Does it have 4 legs?": Question{
-		Yes: "Does it have stripes?",
-		No:  "Is it carnivorous?",
-	},
-	"Does it have stripes?": Question{
-		Yes: "Is it a zebra?",
-		No:  "Is it a lion?",
-	},
-	"Is it carnivorous?": Question{
-		Yes: "Is it a snake?",
-		No:  "Is it a worm?",
-	},
-	"Is it a zebra?": Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
-	},
-	"Is it a giraffe?": Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
-	},
-	"Is it a lion?": Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
-	},
-	"Is it a snake?": Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
-	},
-	"Is it a worm?": Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
-	},
+// Replay - function to replay the game
+func Replay(r io.Reader) bool {
+	fmt.Print("Would you like to play again (y/n)? ")
+	var replay string
+	replay, _ = GetUserYesOrNo(r)
+	if replay == AnswerYes {
+		return true
+	}
+	fmt.Println("Thanks for playing!")
+	return false
 }
 
-// StartingQuestion ...
-var StartingQuestion = "Does it have 4 legs?"
-
-// Question ...
-type Question struct {
-	Yes string // what question is next, if answer is yes
-	No  string // what question is next, if answer is no
-}
-
-// GetUserYesOrNo ...
+// GetUserYesOrNo - function to map variations of yes/no responses
 func GetUserYesOrNo(r io.Reader) (string, error) {
 	var input string
 	_, err := fmt.Fscanln(r, &input)
