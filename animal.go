@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"strings"
 )
 
 const (
@@ -34,35 +35,35 @@ type game struct {
 // NewGame - Initializing a new game with Starting Data and Running State
 func NewGame() game {
 	var StartingData = map[string]Question{
-		"Does it have 4 legs?": Question{
+		"Does it have 4 legs?": {
 			Yes: "Does it have stripes?",
 			No:  "Is it carnivorous?",
 		},
-		"Does it have stripes?": Question{
+		"Does it have stripes?": {
 			Yes: "Is it a zebra?",
 			No:  "Is it a lion?",
 		},
-		"Is it carnivorous?": Question{
+		"Is it carnivorous?": {
 			Yes: "Is it a snake?",
 			No:  "Is it a worm?",
 		},
-		"Is it a zebra?": Question{
+		"Is it a zebra?": {
 			Yes: AnswerWin,
 			No:  AnswerLose,
 		},
-		"Is it a giraffe?": Question{
+		"Is it a giraffe?": {
 			Yes: AnswerWin,
 			No:  AnswerLose,
 		},
-		"Is it a lion?": Question{
+		"Is it a lion?": {
 			Yes: AnswerWin,
 			No:  AnswerLose,
 		},
-		"Is it a snake?": Question{
+		"Is it a snake?": {
 			Yes: AnswerWin,
 			No:  AnswerLose,
 		},
-		"Is it a worm?": Question{
+		"Is it a worm?": {
 			Yes: AnswerWin,
 			No:  AnswerLose,
 		},
@@ -132,10 +133,15 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	scanner := bufio.NewScanner(r)
 	scanner.Scan()
 	qDistinctive := scanner.Text()
-	fmt.Println("New animal question is ", qDistinctive)
+
 	fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input)
 
-	ans, _ := GetUserYesOrNo(r)
+	scanner.Scan()
+	//ans, err2 := GetUserYesOrNo(r)
+	ans, err2 := GetUserYesOrNo(strings.NewReader(scanner.Text()))
+	if err2 != nil {
+		fmt.Println("error getting ans", err2)
+	}
 
 	fmt.Fprintf(w, "The answer is %s\n", ans)
 	fmt.Printf("The new animal answer is %s and %s", ans, r)

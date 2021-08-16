@@ -161,33 +161,7 @@ func TestPlayNewAnimalAnswerYes(t *testing.T) {
 		t.Errorf("Expected %q, did not find the question in the map.", want)
 	}
 
-	// Now that we have added the new animal, let's test it again
-	// This test is not working at the moment - Aug 14, 2021
-	// The new question in Data in the test is different from when
-	// the game is run manually
-	// ** Game Play ** -
-	// map[Does it have 4 legs?:{Yes:Does it have stripes? No:Is it carnivorous?}
-	// Does it have stripes?:{Yes:Is it a predator? No:Is it a lion?}
-	// Is it a giraffe?:{Yes:I win!! No:I lose!!}
-	// Is it a lion?:{Yes:I win!! No:I lose!!}
-	// Is it a predator?:{Yes:Is it a tiger? No:Is it a zebra?}
-	// Is it a snake?:{Yes:I win!! No:I lose!!}
-	// Is it a tiger?:{Yes:I win!! No:I lose!!}
-	// Is it a worm?:{Yes:I win!! No:I lose!!}
-	// Is it a zebra?:{Yes:I win!! No:I lose!!}
-	// Is it carnivorous?:{Yes:Is it a snake? No:Is it a worm?}]
-	// ** During the test **
-	// map[Does it have 4 legs?:{Yes:Does it have stripes? No:Is it carnivorous?}
-	// Does it have stripes?:{Yes:Is it a zebra? No:Is it a predator?}
-	// Is it a giraffe?:{Yes:I win!! No:I lose!!}
-	// Is it a lion?:{Yes:I win!! No:I lose!!}
-	// Is it a predator?:{Yes:Is it a lion? No:Is it a tiger?}
-	// Is it a snake?:{Yes:I win!! No:I lose!!}
-	// Is it a tiger?:{Yes:I win!! No:I lose!!}
-	// Is it a worm?:{Yes:I win!! No:I lose!!}
-	// Is it a zebra?:{Yes:I win!! No:I lose!!}
-	// Is it carnivorous?:{Yes:Is it a snake? No:Is it a worm?}]
-	input2 := strings.NewReader("yes\nyes\nyes\n")
+	input2 := strings.NewReader("yes\nyes\nyes\nyes\n")
 	err2 := testGame.Play(input2, ioutil.Discard)
 	if err2 != nil {
 		t.Error(err)
