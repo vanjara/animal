@@ -80,7 +80,6 @@ func (g game) NextQuestion(q string, r string) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("no such question %q", q)
 	}
-	fmt.Println("response is ", r)
 	if r == AnswerYes {
 
 		return question.Yes, nil
@@ -126,38 +125,32 @@ func (g game) Play(r io.Reader, w io.Writer) error {
 func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	var input string
 	fmt.Fprintln(w, "Please tell me the animal you were thinking about: ")
-	_, _ = fmt.Fscanln(r, &input)
-	fmt.Println("New animal response is ", input)
-	fmt.Fprintf(w, "What would be a Yes/No question to distinguish %s from other animals: ", input)
-
 	scanner := bufio.NewScanner(r)
+	scanner.Scan()
+	input = scanner.Text()
+
+	fmt.Fprintf(w, "What would be a Yes/No question to distinguish %s from other animals: ", input)
 	scanner.Scan()
 	qDistinctive := scanner.Text()
 
 	fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input)
 
 	scanner.Scan()
-	//ans, err2 := GetUserYesOrNo(r)
 	ans, err2 := GetUserYesOrNo(strings.NewReader(scanner.Text()))
 	if err2 != nil {
 		fmt.Println("error getting ans", err2)
 	}
 
-	fmt.Fprintf(w, "The answer is %s\n", ans)
-	fmt.Printf("The new animal answer is %s and %s", ans, r)
-
 	qNewAnimal := "Is it a " + input + "?"
 
 	qPrevious := g.Data[pq]
 	if ans == AnswerYes {
-		fmt.Println("In AnswerYes block")
 		g.Data[qDistinctive] = Question{
 			Yes: qNewAnimal,
 			No:  g.Data[pq].Yes,
 		}
 		qPrevious.Yes = qDistinctive
 	} else {
-		fmt.Println("In AnswerNo block")
 		g.Data[qDistinctive] = Question{
 			No:  qNewAnimal,
 			Yes: g.Data[pq].No,
@@ -170,7 +163,6 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 		Yes: AnswerWin,
 		No:  AnswerLose,
 	}
-	fmt.Fprintf(w, "The updated Data is %+v\n", g.Data)
 }
 
 // Replay - function to replay the game
@@ -190,7 +182,6 @@ func GetUserYesOrNo(r io.Reader) (string, error) {
 	var input string
 	_, err := fmt.Fscanln(r, &input)
 
-	fmt.Printf("GetUserYesOrNo: %q is and input is %q \n", r, input)
 	if err != nil {
 		return "", err
 	}
