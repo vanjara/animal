@@ -169,8 +169,8 @@ func TestPlayNewAnimalAnswerYes(t *testing.T) {
 	if input2.Len() != 0 {
 		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input2.Len())
 	}
-	fmt.Printf("%+v\n", testGame.Data)
-	fmt.Printf("%v\n", want)
+	//fmt.Printf("%+v\n", testGame.Data)
+	//fmt.Printf("%v\n", want)
 	//want = animal.AnswerWin
 	if got, ok := testGame.Data[want]; !ok {
 		t.Errorf("Expected %q, got %q.", want, got)
@@ -209,8 +209,8 @@ func TestPlayNewAnimalAnswerNo(t *testing.T) {
 	if input2.Len() != 0 {
 		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input2.Len())
 	}
-	fmt.Printf("%+v\n", testGame.Data)
-	fmt.Printf("%v\n", want)
+	//fmt.Printf("%+v\n", testGame.Data)
+	//fmt.Printf("%+v\n", want)
 	//want = animal.AnswerWin
 	if got, ok := testGame.Data[want]; !ok {
 		t.Errorf("Expected %q, got %q.", want, got)
