@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"strings"
 )
 
 const (
@@ -34,35 +35,35 @@ type game struct {
 // NewGame - Initializing a new game with Starting Data and Running State
 func NewGame() game {
 	var StartingData = map[string]Question{
-		"Does it have 4 legs?": Question{
+		"Does it have 4 legs?": {
 			Yes: "Does it have stripes?",
 			No:  "Is it carnivorous?",
 		},
-		"Does it have stripes?": Question{
+		"Does it have stripes?": {
 			Yes: "Is it a zebra?",
 			No:  "Is it a lion?",
 		},
-		"Is it carnivorous?": Question{
+		"Is it carnivorous?": {
 			Yes: "Is it a snake?",
 			No:  "Is it a worm?",
 		},
-		"Is it a zebra?": Question{
+		"Is it a zebra?": {
 			Yes: AnswerWin,
 			No:  AnswerLose,
 		},
-		"Is it a giraffe?": Question{
+		"Is it a giraffe?": {
 			Yes: AnswerWin,
 			No:  AnswerLose,
 		},
-		"Is it a lion?": Question{
+		"Is it a lion?": {
 			Yes: AnswerWin,
 			No:  AnswerLose,
 		},
-		"Is it a snake?": Question{
+		"Is it a snake?": {
 			Yes: AnswerWin,
 			No:  AnswerLose,
 		},
-		"Is it a worm?": Question{
+		"Is it a worm?": {
 			Yes: AnswerWin,
 			No:  AnswerLose,
 		},
@@ -80,6 +81,7 @@ func (g game) NextQuestion(q string, r string) (string, error) {
 		return "", fmt.Errorf("no such question %q", q)
 	}
 	if r == AnswerYes {
+
 		return question.Yes, nil
 	}
 	return question.No, nil
@@ -108,7 +110,7 @@ func (g game) Play(r io.Reader, w io.Writer) error {
 
 		switch question {
 		case AnswerWin:
-			fmt.Fprintln(w, "I successfully guessed your animal! Awesome!")
+			fmt.Fprintf(w, "I successfully guessed your animal! Awesome!\n")
 			g.Running = false
 		case AnswerLose:
 			fmt.Fprintf(w, "You stumped me! Well done!\n")
@@ -123,31 +125,41 @@ func (g game) Play(r io.Reader, w io.Writer) error {
 func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	var input string
 	fmt.Fprintln(w, "Please tell me the animal you were thinking about: ")
-	_, _ = fmt.Fscanln(r, &input)
-
-	fmt.Fprintf(w, "What would be a Yes/No question to distinguish %s from other animals: ", input)
-
 	scanner := bufio.NewScanner(r)
 	scanner.Scan()
-	newq := scanner.Text()
+	input = scanner.Text()
 
-	fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", newq, input)
+	fmt.Fprintf(w, "What would be a Yes/No question to distinguish %s from other animals: ", input)
+	scanner.Scan()
+	qDistinctive := scanner.Text()
 
-	scanner2 := bufio.NewScanner(r)
-	scanner2.Scan()
-	ans := scanner2.Text()
-	fmt.Fprintf(w, "The answer is %s\n", ans)
+	fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input)
 
-	addQuestion := "Is it a " + input + "?"
-	g.Data[newq] = Question{
-		Yes: addQuestion,
-		No:  g.Data[pq].Yes,
+	scanner.Scan()
+	ans, err2 := GetUserYesOrNo(strings.NewReader(scanner.Text()))
+	if err2 != nil {
+		fmt.Println("error getting ans", err2)
 	}
-	temp := g.Data[pq]
-	temp.Yes = newq
-	g.Data[pq] = temp
 
-	g.Data[addQuestion] = Question{
+	qNewAnimal := "Is it a " + input + "?"
+
+	qPrevious := g.Data[pq]
+	if ans == AnswerYes {
+		g.Data[qDistinctive] = Question{
+			Yes: qNewAnimal,
+			No:  g.Data[pq].Yes,
+		}
+		qPrevious.Yes = qDistinctive
+	} else {
+		g.Data[qDistinctive] = Question{
+			No:  qNewAnimal,
+			Yes: g.Data[pq].No,
+		}
+		qPrevious.No = qDistinctive
+	}
+	g.Data[pq] = qPrevious
+
+	g.Data[qNewAnimal] = Question{
 		Yes: AnswerWin,
 		No:  AnswerLose,
 	}
@@ -169,6 +181,7 @@ func Replay(r io.Reader) bool {
 func GetUserYesOrNo(r io.Reader) (string, error) {
 	var input string
 	_, err := fmt.Fscanln(r, &input)
+
 	if err != nil {
 		return "", err
 	}

@@ -100,3 +100,6 @@
 # Move replay logic to the game (not in Main)
 # Future versions - play it in a browser?
 # auto deployment somewhere?
+
+# GetUserYesorNo
+# Loop until valid answers (no need to return error)

@@ -2,6 +2,7 @@ package animal_test
 
 import (
 	"animal"
+	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -139,7 +140,7 @@ func TestNextQuestion(t *testing.T) {
 	}
 }
 
-func TestPlayNewAnimal(t *testing.T) {
+func TestPlayNewAnimalAnswerYes(t *testing.T) {
 	t.Parallel()
 	testGame := animal.NewGame()
 	input := strings.NewReader("yes\nyes\nno\ntiger\nIs it a predator?\nyes\n")
@@ -158,5 +159,62 @@ func TestPlayNewAnimal(t *testing.T) {
 	want = "Is it a tiger?"
 	if _, ok := testGame.Data[want]; !ok {
 		t.Errorf("Expected %q, did not find the question in the map.", want)
+	}
+
+	input2 := strings.NewReader("yes\nyes\nyes\nyes\n")
+	err2 := testGame.Play(input2, ioutil.Discard)
+	if err2 != nil {
+		t.Error(err)
+	}
+	if input2.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input2.Len())
+	}
+	//fmt.Printf("%+v\n", testGame.Data)
+	//fmt.Printf("%v\n", want)
+	//want = animal.AnswerWin
+	if got, ok := testGame.Data[want]; !ok {
+		t.Errorf("Expected %q, got %q.", want, got)
+	} else {
+		fmt.Printf("got %+v", got)
+	}
+
+}
+
+func TestPlayNewAnimalAnswerNo(t *testing.T) {
+	t.Parallel()
+	testGame := animal.NewGame()
+	input := strings.NewReader("no\nno\nno\noctopus\nIs it a land animal?\nno\n")
+
+	err := testGame.Play(input, ioutil.Discard)
+	if err != nil {
+		t.Error(err)
+	}
+	if input.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
+	}
+	want := "Is it a land animal?"
+	if _, ok := testGame.Data[want]; !ok {
+		t.Errorf("Expected %q, did not find the question in the map.", want)
+	}
+	want = "Is it a octopus?"
+	if _, ok := testGame.Data[want]; !ok {
+		t.Errorf("Expected %q, did not find the question in the map.", want)
+	}
+
+	input2 := strings.NewReader("no\nno\nno\nyes\n")
+	err2 := testGame.Play(input2, ioutil.Discard)
+	if err2 != nil {
+		t.Error(err)
+	}
+	if input2.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input2.Len())
+	}
+	//fmt.Printf("%+v\n", testGame.Data)
+	//fmt.Printf("%+v\n", want)
+	//want = animal.AnswerWin
+	if got, ok := testGame.Data[want]; !ok {
+		t.Errorf("Expected %q, got %q.", want, got)
+	} else {
+		fmt.Printf("got %+v", got)
 	}
 }
