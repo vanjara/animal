@@ -108,19 +108,19 @@ func TestNextQuestion(t *testing.T) {
 		{
 			question:    "Is it a snake?",
 			response:    animal.AnswerYes,
-			want:        animal.AnswerWin,
+			want:        "AnswerWin",
 			errExpected: false,
 		},
 		{
 			question:    "Is it a giraffe?",
 			response:    animal.AnswerNo,
-			want:        animal.AnswerLose,
+			want:        "AnswerLose",
 			errExpected: false,
 		},
 		{
 			question:    "Is it a lion?",
 			response:    animal.AnswerYes,
-			want:        animal.AnswerWin,
+			want:        "AnswerWin",
 			errExpected: false,
 		},
 		{

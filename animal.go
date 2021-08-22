@@ -2,8 +2,11 @@ package animal
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"strings"
 )
 
@@ -12,10 +15,6 @@ const (
 	AnswerYes = "yes"
 	// AnswerNo is No
 	AnswerNo = "no"
-	// AnswerWin is I win
-	AnswerWin = "I win!!"
-	// AnswerLose is I lose
-	AnswerLose = "I lose!!"
 )
 
 // Question struct to map to the Yes and No responses
@@ -34,40 +33,18 @@ type game struct {
 
 // NewGame - Initializing a new game with Starting Data and Running State
 func NewGame() game {
-	var StartingData = map[string]Question{
-		"Does it have 4 legs?": {
-			Yes: "Does it have stripes?",
-			No:  "Is it carnivorous?",
-		},
-		"Does it have stripes?": {
-			Yes: "Is it a zebra?",
-			No:  "Is it a lion?",
-		},
-		"Is it carnivorous?": {
-			Yes: "Is it a snake?",
-			No:  "Is it a worm?",
-		},
-		"Is it a zebra?": {
-			Yes: AnswerWin,
-			No:  AnswerLose,
-		},
-		"Is it a giraffe?": {
-			Yes: AnswerWin,
-			No:  AnswerLose,
-		},
-		"Is it a lion?": {
-			Yes: AnswerWin,
-			No:  AnswerLose,
-		},
-		"Is it a snake?": {
-			Yes: AnswerWin,
-			No:  AnswerLose,
-		},
-		"Is it a worm?": {
-			Yes: AnswerWin,
-			No:  AnswerLose,
-		},
+	var StartingData map[string]Question
+	content, err := ioutil.ReadFile("./data.json")
+	if err != nil {
+		log.Fatal("Error when opening file: ", err)
 	}
+
+	// Now let's unmarshall the data into StartingData
+	err = json.Unmarshal(content, &StartingData)
+	if err != nil {
+		log.Fatal("Error during Unmarshal(): ", err)
+	}
+	//log.Printf("StartingData: %+v\n", StartingData)
 	return game{
 		Running: true,
 		Data:    StartingData,
@@ -109,10 +86,10 @@ func (g game) Play(r io.Reader, w io.Writer) error {
 		}
 
 		switch question {
-		case AnswerWin:
-			fmt.Fprintf(w, "I successfully guessed your animal! Awesome!\n")
+		case "AnswerWin":
+			fmt.Fprintln(w, "I successfully guessed your animal! Awesome!")
 			g.Running = false
-		case AnswerLose:
+		case "AnswerLose":
 			fmt.Fprintf(w, "You stumped me! Well done!\n")
 			g.LearnNewAnimal(r, w, prev2)
 			g.Running = false
@@ -160,8 +137,8 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	g.Data[pq] = qPrevious
 
 	g.Data[qNewAnimal] = Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
+		Yes: "AnswerWin",
+		No:  "AnswerLose",
 	}
 }
 
