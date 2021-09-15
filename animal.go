@@ -73,11 +73,11 @@ func (g game) NextQuestion(q string, r string) (string, error) {
 func (g *game) Play(r io.Reader, w io.Writer) error {
 	question := StartingQuestion
 	var prev1, prev2 string
-	fmt.Println("Playing Game")
+
 	for g.Running {
 		fmt.Fprint(w, question, " ")
 		g.transcript.WriteString(question + " ")
-		//log.Println(question)
+
 		response, err := g.GetUserYesOrNo(r)
 		for err != nil {
 			fmt.Fprintln(w, "Please answer yes or no: ")
@@ -155,18 +155,13 @@ func (g *game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 		}
 		qPrevious.No = qDistinctive
 	}
-	//fmt.Printf("After if the game %+v", g.Data)
+
 	g.Data[pq] = qPrevious
 
 	g.Data[qNewAnimal] = Question{
 		Yes: "AnswerWin",
 		No:  "AnswerLose",
 	}
-	// Since we have learned the new animal, let's write it to a file
-	// mux.Lock()
-	// file, _ := json.MarshalIndent(g.Data, "", " ")
-	// _ = ioutil.WriteFile("data.json", file, 0644)
-	// mux.Unlock()
 }
 
 // Replay - function to replay the game
@@ -174,10 +169,13 @@ func (g *game) Replay(r io.Reader) bool {
 	fmt.Print("Would you like to play again (y/n)? ")
 	g.transcript.WriteString("Would you like to play again (y/n)? ")
 	var replay string
-	// ToDo - Do we need to check the error here
-	// We should keep prompting until we get expected input
-	// Add invalid responses to the test for GetUserYesOrNo
-	replay, _ = g.GetUserYesOrNo(r)
+
+	replay, err3 := g.GetUserYesOrNo(r)
+	for err3 != nil {
+		fmt.Println(err3)
+		fmt.Print("Would you like to play again (y/n)? ")
+		replay, err3 = g.GetUserYesOrNo(r)
+	}
 	if replay == AnswerYes {
 		return true
 	}
@@ -189,6 +187,7 @@ func (g *game) Replay(r io.Reader) bool {
 // GetUserYesOrNo - function to map variations of yes/no responses
 func (g *game) GetUserYesOrNo(r io.Reader) (string, error) {
 	var input string
+
 	_, err := fmt.Fscanln(r, &input)
 
 	if err != nil {
@@ -203,4 +202,5 @@ func (g *game) GetUserYesOrNo(r io.Reader) (string, error) {
 	default:
 		return "", fmt.Errorf("Unexpected input: %q", input)
 	}
+
 }
