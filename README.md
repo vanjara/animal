@@ -102,4 +102,6 @@
 # auto deployment somewhere?
 
 # GetUserYesorNo
-# Loop until valid answers (no need to return error)
+# Loop until valid answers (no need to return error) - Done
+
+# Game should use a pointer (we are modifying the game and data on learning)

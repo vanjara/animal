@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	"sync"
 )
 
 const (
@@ -23,8 +24,13 @@ type Question struct {
 	No  string // what question is next, if answer is no
 }
 
+// This is to store the session transcript
+var builder = strings.Builder{}
+
 // StartingQuestion - This is the first Question
 var StartingQuestion = "Does it have 4 legs?"
+
+var mux sync.Mutex
 
 type game struct {
 	Running bool
@@ -34,11 +40,12 @@ type game struct {
 // NewGame - Initializing a new game with Starting Data and Running State
 func NewGame() game {
 	var StartingData map[string]Question
+	mux.Lock()
 	content, err := ioutil.ReadFile("./data.json")
 	if err != nil {
 		log.Fatal("Error when opening file: ", err)
 	}
-
+	mux.Unlock()
 	// Now let's unmarshall the data into StartingData
 	err = json.Unmarshal(content, &StartingData)
 	if err != nil {
@@ -71,6 +78,8 @@ func (g game) Play(r io.Reader, w io.Writer) error {
 
 	for g.Running {
 		fmt.Fprint(w, question, " ")
+		builder.WriteString(question + " ")
+		//log.Println(question)
 		response, err := GetUserYesOrNo(r)
 		for err != nil {
 			fmt.Fprintln(w, "Please answer yes or no: ")
@@ -88,9 +97,11 @@ func (g game) Play(r io.Reader, w io.Writer) error {
 		switch question {
 		case "AnswerWin":
 			fmt.Fprintln(w, "I successfully guessed your animal! Awesome!")
+			builder.WriteString("I successfully guessed your animal! Awesome!")
 			g.Running = false
 		case "AnswerLose":
 			fmt.Fprintf(w, "You stumped me! Well done!\n")
+			builder.WriteString("You stumped me! Well done!\n")
 			g.LearnNewAnimal(r, w, prev2)
 			g.Running = false
 		}
@@ -98,24 +109,34 @@ func (g game) Play(r io.Reader, w io.Writer) error {
 	return nil
 }
 
+func (g game) Transcript() string {
+	return builder.String()
+}
+
 // LearnNewAnimal - Function to learn the question to add for new animal
 func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	var input string
 	fmt.Fprintln(w, "Please tell me the animal you were thinking about: ")
+	builder.WriteString("Please tell me the animal you were thinking about: ")
 	scanner := bufio.NewScanner(r)
 	scanner.Scan()
 	input = scanner.Text()
 
 	fmt.Fprintf(w, "What would be a Yes/No question to distinguish %s from other animals: ", input)
+	builder.WriteString(fmt.Sprintf("What would be a Yes/No question to distinguish %s from other animals: ", input))
 	scanner.Scan()
 	qDistinctive := scanner.Text()
 
 	fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input)
+	builder.WriteString(fmt.Sprintf("What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input))
 
 	scanner.Scan()
 	ans, err2 := GetUserYesOrNo(strings.NewReader(scanner.Text()))
-	if err2 != nil {
-		fmt.Println("error getting ans", err2)
+
+	for err2 != nil {
+		fmt.Fprintln(w, "Please answer yes or no: ")
+		fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input)
+		ans, err2 = GetUserYesOrNo(r)
 	}
 
 	qNewAnimal := "Is it a " + input + "?"
@@ -134,23 +155,31 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 		}
 		qPrevious.No = qDistinctive
 	}
+	//fmt.Printf("After if the game %+v", g.Data)
 	g.Data[pq] = qPrevious
 
 	g.Data[qNewAnimal] = Question{
 		Yes: "AnswerWin",
 		No:  "AnswerLose",
 	}
+	// Since we have learned the new animal, let's write it to a file
+	// mux.Lock()
+	// file, _ := json.MarshalIndent(g.Data, "", " ")
+	// _ = ioutil.WriteFile("data.json", file, 0644)
+	// mux.Unlock()
 }
 
 // Replay - function to replay the game
 func Replay(r io.Reader) bool {
 	fmt.Print("Would you like to play again (y/n)? ")
+	builder.WriteString("Would you like to play again (y/n)? ")
 	var replay string
 	replay, _ = GetUserYesOrNo(r)
 	if replay == AnswerYes {
 		return true
 	}
 	fmt.Println("Thanks for playing!")
+	builder.WriteString("Thanks for playing!")
 	return false
 }
 
@@ -162,7 +191,7 @@ func GetUserYesOrNo(r io.Reader) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
+	builder.WriteString(input + "\n")
 	switch input {
 	case "yes", "y", "YES", "Yes":
 		return AnswerYes, nil

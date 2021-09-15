@@ -28,6 +28,26 @@ func TestPlay(t *testing.T) {
 		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
 	}
 }
+
+func TestTranscript(t *testing.T) {
+	t.Parallel()
+	testGame := animal.NewGame()
+	input := strings.NewReader("yes\nyes\nyes\n")
+	err := testGame.Play(input, ioutil.Discard)
+	if err != nil {
+		t.Error(err)
+	}
+	got := testGame.Transcript()
+	want := `Does it have 4 legs? yes
+Does it have stripes? yes
+Is it a zebra? yes
+I successfully guessed your animal! Awesome!`
+
+	if got != want {
+		t.Errorf("Expected %q, got %q", want, got)
+	}
+
+}
 func TestGetUserYesOrNo(t *testing.T) {
 	t.Parallel()
 	// multiple test cases
