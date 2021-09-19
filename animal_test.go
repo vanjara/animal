@@ -266,3 +266,34 @@ func TestPlayNewAnimalAnswerNo(t *testing.T) {
 		fmt.Printf("got %+v", got)
 	}
 }
+
+func TestReplay(t *testing.T) {
+	t.Parallel()
+	testGame, err := animal.NewGame()
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Test for replay = no
+	input := strings.NewReader("no\n")
+	got := testGame.Replay(input, ioutil.Discard)
+	want := false
+
+	if want != got {
+		t.Errorf("Expected want: %v, got: %v\n", want, got)
+	}
+	if input.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
+	}
+
+	// Test for replay = yes
+	input2 := strings.NewReader("yes\n")
+	got2 := testGame.Replay(input2, ioutil.Discard)
+	want2 := true
+	if want2 != got2 {
+		t.Errorf("Expected want: %v, got: %v\n", want2, got2)
+	}
+	if input2.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input2.Len())
+	}
+}
