@@ -12,23 +12,23 @@
         "No": "Is it a worm?"
     },
     "Is it a zebra?": {
-        "Yes": "AnswerWin",
-        "No":  "AnswerLose"
+        "Yes": "Win",
+        "No":  "Loss"
     },
     "Is it a giraffe?": {
-        "Yes": "AnswerWin",
-        "No":  "AnswerLose"
+        "Yes": "Win",
+        "No":  "Loss"
     },
     "Is it a lion?": {
-        "Yes": "AnswerWin",
-        "No":  "AnswerLose"
+        "Yes": "Win",
+        "No":  "Loss"
     },
     "Is it a snake?": {
-        "Yes": "AnswerWin",
-        "No":  "AnswerLose"
+        "Yes": "Win",
+        "No":  "Loss"
     },
     "Is it a worm?": {
-        "Yes": "AnswerWin",
-        "No":  "AnswerLose"
+        "Yes": "Win",
+        "No":  "Loss"
     }
 }

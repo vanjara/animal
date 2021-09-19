@@ -9,8 +9,8 @@ import (
 
 func main() {
 	playing := true
-	file := "../data.json"
-	g, err := animal.NewGame(file)
+	//file := "../data.json"
+	g, err := animal.NewGame()
 	if err != nil {
 		log.Fatalf("Encountered error with new game: %s", err)
 	}

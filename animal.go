@@ -2,12 +2,11 @@ package animal
 
 import (
 	"bufio"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strings"
-	"sync"
 )
 
 const (
@@ -26,28 +25,21 @@ type Question struct {
 // StartingQuestion - This is the first Question
 var StartingQuestion = "Does it have 4 legs?"
 
-var mux sync.Mutex
-
 type game struct {
 	Running    bool
 	Data       map[string]Question
 	transcript strings.Builder
 }
 
+//go:embed data.json
+var content []byte
+
 // NewGame - Initializing a new game with Starting Data and Running State
-func NewGame(filePath string) (*game, error) {
+func NewGame() (*game, error) {
 	var StartingData map[string]Question
-	mux.Lock()
-	content, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer mux.Unlock()
-	// Now let's unmarshall the data into StartingData
-	err = json.Unmarshal(content, &StartingData)
+	err := json.Unmarshal(content, &StartingData)
 	if err != nil {
 		return nil, fmt.Errorf("Error during Unmarshal(): %s", err)
-
 	}
 	return &game{
 		Running: true,
@@ -59,10 +51,9 @@ func NewGame(filePath string) (*game, error) {
 func (g game) NextQuestion(q string, r string) (string, error) {
 	question, ok := g.Data[q]
 	if !ok {
-		return "", fmt.Errorf("no such question %q", q)
+		return "", fmt.Errorf("No such question: %q", q)
 	}
 	if r == AnswerYes {
-
 		return question.Yes, nil
 	}
 	return question.No, nil
@@ -72,33 +63,28 @@ func (g game) NextQuestion(q string, r string) (string, error) {
 func (g *game) Play(r io.Reader, w io.Writer) error {
 	question := StartingQuestion
 	var prev1, prev2 string
+	var err error
 
 	for g.Running {
-		fmt.Fprint(w, question, " ")
-		g.transcript.WriteString(question + " ")
+		g.Output(w, question+" ")
 
-		response, err := g.GetUserYesOrNo(r, w)
-		for err != nil {
-			fmt.Fprintf(w, "Please answer yes or no: ")
-			fmt.Fprint(w, question, " ")
-			response, err = g.GetUserYesOrNo(r, w)
-		}
+		response, _ := g.GetUserYesOrNo(r, w)
+
 		prev2 = prev1
 		prev1 = question
+
 		question, err = g.NextQuestion(question, response)
 		if err != nil {
-			fmt.Fprintf(w, "oh no, internal error! Not your fault!")
+			fmt.Fprintf(w, "Oh no, internal error! Not your fault!")
 			return err
 		}
 
 		switch question {
-		case "AnswerWin":
-			fmt.Fprintf(w, "I successfully guessed your animal! Awesome!\n")
-			g.transcript.WriteString("I successfully guessed your animal! Awesome!\n")
+		case "Win":
+			g.Output(w, "I successfully guessed your animal! Awesome!\n")
 			g.Running = false
-		case "AnswerLose":
-			fmt.Fprintf(w, "You stumped me! Well done!\n")
-			g.transcript.WriteString("You stumped me! Well done!\n")
+		case "Loss":
+			g.Output(w, "You stumped me! Well done!\n")
 			g.LearnNewAnimal(r, w, prev2)
 			g.Running = false
 		}
@@ -106,10 +92,12 @@ func (g *game) Play(r io.Reader, w io.Writer) error {
 	return nil
 }
 
+// Transcript function
 func (g game) Transcript() string {
 	return g.transcript.String()
 }
 
+// Output function - will print to screen and also add to transcript
 func (g *game) Output(w io.Writer, text string) {
 	fmt.Fprintf(w, text)
 	g.transcript.WriteString(text)
@@ -133,13 +121,7 @@ func (g *game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	g.Output(w, fmt.Sprintf("What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input))
 
 	scanner.Scan()
-	ans, err := g.GetUserYesOrNo(strings.NewReader(scanner.Text()), w)
-
-	for err != nil {
-		g.Output(w, "Please answer yes or no: ")
-		g.Output(w, fmt.Sprintf("What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input))
-		ans, err = g.GetUserYesOrNo(r, w)
-	}
+	ans, _ := g.GetUserYesOrNo(strings.NewReader(scanner.Text()), w)
 
 	qNewAnimal := "Is it a " + input + "?"
 
@@ -159,24 +141,16 @@ func (g *game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	}
 
 	g.Data[pq] = qPrevious
-
 	g.Data[qNewAnimal] = Question{
-		Yes: "AnswerWin",
-		No:  "AnswerLose",
+		Yes: "Win",
+		No:  "Loss",
 	}
 }
 
 // Replay - function to replay the game
 func (g *game) Replay(r io.Reader, w io.Writer) bool {
 	g.Output(w, "Would you like to play again (y/n)? ")
-	var replay string
-
-	replay, err := g.GetUserYesOrNo(r, w)
-	for err != nil {
-		g.Output(w, fmt.Sprintf("Error encountered %s", err))
-		g.Output(w, "Would you like to play again (y/n)? ")
-		replay, err = g.GetUserYesOrNo(r, w)
-	}
+	replay, _ := g.GetUserYesOrNo(r, w)
 	if replay == AnswerYes {
 		g.Running = true
 		return true
@@ -210,5 +184,4 @@ func (g *game) GetUserYesOrNo(r io.Reader, w io.Writer) (string, error) {
 		}
 	}
 	return response, nil
-
 }
