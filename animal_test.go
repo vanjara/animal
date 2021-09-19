@@ -12,17 +12,23 @@ import (
 
 func TestNewGame(t *testing.T) {
 	t.Parallel()
-	a := animal.NewGame()
+	a, err := animal.NewGame("./data.json")
 	if !a.Running {
 		t.Errorf("want a.Running == true")
+	}
+	if err != nil {
+		t.Error(err)
 	}
 }
 
 func TestPlay(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame("./data.json")
+	if err != nil {
+		t.Error(err)
+	}
 	input := strings.NewReader("yes\nyes\nyes\n")
-	err := testGame.Play(input, ioutil.Discard)
+	err = testGame.Play(input, ioutil.Discard)
 	if err != nil {
 		t.Error(err)
 	}
@@ -33,9 +39,12 @@ func TestPlay(t *testing.T) {
 
 func TestTranscript(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame("./data.json")
+	if err != nil {
+		t.Error(err)
+	}
 	input := strings.NewReader("yes\nyes\nno\ntiger\nIs it a predator?\nyes\n")
-	err := testGame.Play(input, ioutil.Discard)
+	err = testGame.Play(input, ioutil.Discard)
 	if err != nil {
 		t.Error(err)
 	}
@@ -56,7 +65,10 @@ What would be the answer to the question - "Is it a predator?" for tiger: yes
 }
 func TestGetUserYesOrNo(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame("./data.json")
+	if err != nil {
+		t.Error(err)
+	}
 	// multiple test cases
 	testCases := []struct {
 		input         string
@@ -87,10 +99,13 @@ func TestGetUserYesOrNo(t *testing.T) {
 
 func TestMultipleUserInput(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame("./data.json")
+	if err != nil {
+		t.Error(err)
+	}
 	// multiple test cases
 	input := strings.NewReader("yes\nyes\n")
-	_, err := testGame.GetUserYesOrNo(input)
+	_, err = testGame.GetUserYesOrNo(input)
 	if err != nil {
 		t.Fatalf("Unexpected error Status: %v", err)
 	}
@@ -102,7 +117,10 @@ func TestMultipleUserInput(t *testing.T) {
 
 func TestNextQuestion(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame("./data.json")
+	if err != nil {
+		t.Error(err)
+	}
 	testCases := []struct {
 		question    string
 		response    string
@@ -169,10 +187,13 @@ func TestNextQuestion(t *testing.T) {
 
 func TestPlayNewAnimalAnswerYes(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame("./data.json")
+	if err != nil {
+		t.Error(err)
+	}
 	input := strings.NewReader("yes\nyes\nno\ntiger\nIs it a predator?\nyes\n")
 
-	err := testGame.Play(input, ioutil.Discard)
+	err = testGame.Play(input, ioutil.Discard)
 	if err != nil {
 		t.Error(err)
 	}
@@ -208,10 +229,13 @@ func TestPlayNewAnimalAnswerYes(t *testing.T) {
 
 func TestPlayNewAnimalAnswerNo(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame("./data.json")
+	if err != nil {
+		t.Error(err)
+	}
 	input := strings.NewReader("no\nno\nno\noctopus\nIs it a land animal?\nno\n")
 
-	err := testGame.Play(input, ioutil.Discard)
+	err = testGame.Play(input, ioutil.Discard)
 	if err != nil {
 		t.Error(err)
 	}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"strings"
 	"sync"
 )
@@ -36,24 +35,24 @@ type game struct {
 }
 
 // NewGame - Initializing a new game with Starting Data and Running State
-func NewGame() *game {
+func NewGame(filePath string) (*game, error) {
 	var StartingData map[string]Question
 	mux.Lock()
-	content, err := ioutil.ReadFile("./data.json")
+	content, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		log.Fatal("Error when opening file: ", err)
+		return nil, err
 	}
-	mux.Unlock()
+	defer mux.Unlock()
 	// Now let's unmarshall the data into StartingData
 	err = json.Unmarshal(content, &StartingData)
 	if err != nil {
-		log.Fatal("Error during Unmarshal(): ", err)
+		return nil, fmt.Errorf("Error during Unmarshal(): %s", err)
+
 	}
-	//log.Printf("StartingData: %+v\n", StartingData)
 	return &game{
 		Running: true,
 		Data:    StartingData,
-	}
+	}, nil
 }
 
 // NextQuestion - Function to ask the Next Question
@@ -78,24 +77,24 @@ func (g *game) Play(r io.Reader, w io.Writer) error {
 		fmt.Fprint(w, question, " ")
 		g.transcript.WriteString(question + " ")
 
-		response, err := g.GetUserYesOrNo(r)
+		response, err := g.GetUserYesOrNo(r, w)
 		for err != nil {
-			fmt.Fprintln(w, "Please answer yes or no: ")
+			fmt.Fprintf(w, "Please answer yes or no: ")
 			fmt.Fprint(w, question, " ")
-			response, err = g.GetUserYesOrNo(r)
+			response, err = g.GetUserYesOrNo(r, w)
 		}
 		prev2 = prev1
 		prev1 = question
 		question, err = g.NextQuestion(question, response)
 		if err != nil {
-			fmt.Fprintln(w, "oh no, internal error! Not your fault!")
+			fmt.Fprintf(w, "oh no, internal error! Not your fault!")
 			return err
 		}
 
 		switch question {
 		case "AnswerWin":
-			fmt.Fprintln(w, "I successfully guessed your animal! Awesome!")
-			g.transcript.WriteString("I successfully guessed your animal! Awesome!")
+			fmt.Fprintf(w, "I successfully guessed your animal! Awesome!\n")
+			g.transcript.WriteString("I successfully guessed your animal! Awesome!\n")
 			g.Running = false
 		case "AnswerLose":
 			fmt.Fprintf(w, "You stumped me! Well done!\n")
@@ -111,32 +110,35 @@ func (g game) Transcript() string {
 	return g.transcript.String()
 }
 
+func (g *game) Output(w io.Writer, text string) {
+	fmt.Fprintf(w, text)
+	g.transcript.WriteString(text)
+}
+
 // LearnNewAnimal - Function to learn the question to add for new animal
 func (g *game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	var input string
-	fmt.Fprintln(w, "Please tell me the animal you were thinking about: ")
-	g.transcript.WriteString("Please tell me the animal you were thinking about: ")
+	g.Output(w, "Please tell me the animal you were thinking about: ")
 	scanner := bufio.NewScanner(r)
 	scanner.Scan()
 	input = scanner.Text()
 	g.transcript.WriteString(input + "\n")
 
-	fmt.Fprintf(w, "What would be a Yes/No question to distinguish %s from other animals: ", input)
-	g.transcript.WriteString(fmt.Sprintf("What would be a Yes/No question to distinguish %s from other animals: ", input))
+	g.Output(w, fmt.Sprintf("What would be a Yes/No question to distinguish %s from other animals: ", input))
+
 	scanner.Scan()
 	qDistinctive := scanner.Text()
 	g.transcript.WriteString(qDistinctive + "\n")
 
-	fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input)
-	g.transcript.WriteString(fmt.Sprintf("What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input))
+	g.Output(w, fmt.Sprintf("What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input))
 
 	scanner.Scan()
-	ans, err2 := g.GetUserYesOrNo(strings.NewReader(scanner.Text()))
+	ans, err := g.GetUserYesOrNo(strings.NewReader(scanner.Text()), w)
 
-	for err2 != nil {
-		fmt.Fprintln(w, "Please answer yes or no: ")
-		fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input)
-		ans, err2 = g.GetUserYesOrNo(r)
+	for err != nil {
+		g.Output(w, "Please answer yes or no: ")
+		g.Output(w, fmt.Sprintf("What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input))
+		ans, err = g.GetUserYesOrNo(r, w)
 	}
 
 	qNewAnimal := "Is it a " + input + "?"
@@ -165,42 +167,48 @@ func (g *game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 }
 
 // Replay - function to replay the game
-func (g *game) Replay(r io.Reader) bool {
-	fmt.Print("Would you like to play again (y/n)? ")
-	g.transcript.WriteString("Would you like to play again (y/n)? ")
+func (g *game) Replay(r io.Reader, w io.Writer) bool {
+	g.Output(w, "Would you like to play again (y/n)? ")
 	var replay string
 
-	replay, err3 := g.GetUserYesOrNo(r)
-	for err3 != nil {
-		fmt.Println(err3)
-		fmt.Print("Would you like to play again (y/n)? ")
-		replay, err3 = g.GetUserYesOrNo(r)
+	replay, err := g.GetUserYesOrNo(r, w)
+	for err != nil {
+		g.Output(w, fmt.Sprintf("Error encountered %s", err))
+		g.Output(w, "Would you like to play again (y/n)? ")
+		replay, err = g.GetUserYesOrNo(r, w)
 	}
 	if replay == AnswerYes {
+		g.Running = true
 		return true
 	}
-	fmt.Println("Thanks for playing!")
-	g.transcript.WriteString("Thanks for playing!")
+	g.Output(w, "Thanks for playing!")
 	return false
 }
 
 // GetUserYesOrNo - function to map variations of yes/no responses
-func (g *game) GetUserYesOrNo(r io.Reader) (string, error) {
+func (g *game) GetUserYesOrNo(r io.Reader, w io.Writer) (string, error) {
 	var input string
 
-	_, err := fmt.Fscanln(r, &input)
-
-	if err != nil {
-		return "", err
+	ans := true
+	var response string
+	for ans {
+		_, err := fmt.Fscanln(r, &input)
+		g.transcript.WriteString(input + "\n")
+		if err != nil {
+			return "", err
+		}
+		switch input {
+		case "yes", "y", "YES", "Yes":
+			response = AnswerYes
+			ans = false
+		case "no", "n", "NO", "No":
+			response = AnswerNo
+			ans = false
+		default:
+			ans = true
+			g.Output(w, "Please answer Yes or No (y/n)? ")
+		}
 	}
-	g.transcript.WriteString(input + "\n")
-	switch input {
-	case "yes", "y", "YES", "Yes":
-		return AnswerYes, nil
-	case "no", "n", "NO", "No":
-		return AnswerNo, nil
-	default:
-		return "", fmt.Errorf("Unexpected input: %q", input)
-	}
+	return response, nil
 
 }
