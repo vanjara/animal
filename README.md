@@ -28,6 +28,7 @@ If not, exit
 - How will the game remember answers from previous attempts/game runs
 
 ## Adding a new animal
+```
 *Is it a Zebra
 ans is No (You stumped me)
 Please tell me the animal you were thinking about?
@@ -40,8 +41,8 @@ Does it have 4 legs?
 Does it have stripes?
 Is it a predator?
 Ans is Tiger*
-
--  Add the new question to the map - Done 
+```
+- Add the new question to the map - Done 
 - Add the new animal to the map - Done
 - connect the yes/no answer to the new animal - Done
 - Other answer will be AnswerLose
@@ -50,6 +51,7 @@ Ans is Tiger*
 - Add the new question to the PlayAgainFeature - Done
 
 ### StartingData example
+```
 var StartingData = map[string]Question{
 	"Does it have 4 legs?": Question{
 		Yes: "Does it have stripes?",
@@ -95,7 +97,7 @@ var StartingData = map[string]Question{
 		Yes: AnswerWin,
 		No:  AnswerLose,
 	},
-
+```
 - Read Starting Data from a file (any format) - Done
 - Then write new data to the file for future runs
 - Move replay logic to the game (not in Main) - Done
