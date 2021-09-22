@@ -8,17 +8,17 @@ For Ex:
 User decides zebra
 Game can ask questions like:
 ```
-	Game: Is it an elephant (yes/no)?
-    User: no
-    Game: Is it a horse (yes/no)?
-    User: no
-    Game: Does the animal have stripes (yes/no)?
-    User: yes
-    Game: It is a giraffe (yes/no)?
-    User: no
-    Game: Is it a zebra (yes/no)?
-    User: yes
-    Game: Thank you for playing the game! Would you like to play again (yes/no)?*
+Game: Is it an elephant (yes/no)?
+User: no
+Game: Is it a horse (yes/no)?
+User: no
+Game: Does the animal have stripes (yes/no)?
+User: yes
+Game: It is a giraffe (yes/no)?
+User: no
+Game: Is it a zebra (yes/no)?
+User: yes
+Game: Thank you for playing the game! Would you like to play again (yes/no)?*
 ```
 If yes, repeat above
 If not, exit
@@ -29,7 +29,7 @@ If not, exit
 
 ## Adding a new animal
 ```
-*Is it a Zebra
+Is it a Zebra
 ans is No (You stumped me)
 Please tell me the animal you were thinking about?
 Suppose Ans is Tiger
@@ -40,7 +40,7 @@ We should ask this question to the user for a tiger?
 Does it have 4 legs?
 Does it have stripes?
 Is it a predator?
-Ans is Tiger*
+Ans is Tiger
 ```
 - Add the new question to the map - Done 
 - Add the new animal to the map - Done
