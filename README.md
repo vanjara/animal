@@ -7,7 +7,8 @@ Game should be able to remember information of prior runs
 For Ex:
 User decides zebra
 Game can ask questions like:
-    *Game: Is it an elephant (yes/no)?
+```
+	Game: Is it an elephant (yes/no)?
     User: no
     Game: Is it a horse (yes/no)?
     User: no
@@ -18,6 +19,7 @@ Game can ask questions like:
     Game: Is it a zebra (yes/no)?
     User: yes
     Game: Thank you for playing the game! Would you like to play again (yes/no)?*
+```
 If yes, repeat above
 If not, exit
 ## Other notes:
