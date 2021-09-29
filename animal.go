@@ -2,6 +2,8 @@ package animal
 
 import (
 	"bufio"
+	_ "embed"
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -12,10 +14,6 @@ const (
 	AnswerYes = "yes"
 	// AnswerNo is No
 	AnswerNo = "no"
-	// AnswerWin is I win
-	AnswerWin = "I win!!"
-	// AnswerLose is I lose
-	AnswerLose = "I lose!!"
 )
 
 // Question struct to map to the Yes and No responses
@@ -28,92 +26,65 @@ type Question struct {
 var StartingQuestion = "Does it have 4 legs?"
 
 type game struct {
-	Running bool
-	Data    map[string]Question
+	Running    bool
+	Data       map[string]Question
+	transcript strings.Builder
 }
 
+//go:embed data.json
+var content []byte
+
 // NewGame - Initializing a new game with Starting Data and Running State
-func NewGame() game {
-	var StartingData = map[string]Question{
-		"Does it have 4 legs?": {
-			Yes: "Does it have stripes?",
-			No:  "Is it carnivorous?",
-		},
-		"Does it have stripes?": {
-			Yes: "Is it a zebra?",
-			No:  "Is it a lion?",
-		},
-		"Is it carnivorous?": {
-			Yes: "Is it a snake?",
-			No:  "Is it a worm?",
-		},
-		"Is it a zebra?": {
-			Yes: AnswerWin,
-			No:  AnswerLose,
-		},
-		"Is it a giraffe?": {
-			Yes: AnswerWin,
-			No:  AnswerLose,
-		},
-		"Is it a lion?": {
-			Yes: AnswerWin,
-			No:  AnswerLose,
-		},
-		"Is it a snake?": {
-			Yes: AnswerWin,
-			No:  AnswerLose,
-		},
-		"Is it a worm?": {
-			Yes: AnswerWin,
-			No:  AnswerLose,
-		},
+func NewGame() (*game, error) {
+	var StartingData map[string]Question
+	err := json.Unmarshal(content, &StartingData)
+	if err != nil {
+		return nil, fmt.Errorf("Error during Unmarshal(): %s", err)
 	}
-	return game{
+	return &game{
 		Running: true,
 		Data:    StartingData,
-	}
+	}, nil
 }
 
 // NextQuestion - Function to ask the Next Question
 func (g game) NextQuestion(q string, r string) (string, error) {
 	question, ok := g.Data[q]
 	if !ok {
-		return "", fmt.Errorf("no such question %q", q)
+		return "", fmt.Errorf("No such question: %q", q)
 	}
 	if r == AnswerYes {
-
 		return question.Yes, nil
 	}
 	return question.No, nil
 }
 
 // Play - This is the actual game Play function
-func (g game) Play(r io.Reader, w io.Writer) error {
+func (g *game) Play(r io.Reader, w io.Writer) error {
 	question := StartingQuestion
 	var prev1, prev2 string
+	var err error
 
 	for g.Running {
-		fmt.Fprint(w, question, " ")
-		response, err := GetUserYesOrNo(r)
-		for err != nil {
-			fmt.Fprintln(w, "Please answer yes or no: ")
-			fmt.Fprint(w, question, " ")
-			response, err = GetUserYesOrNo(r)
-		}
+		g.Output(w, question+" ")
+
+		response, _ := g.GetUserYesOrNo(r, w)
+
 		prev2 = prev1
 		prev1 = question
+
 		question, err = g.NextQuestion(question, response)
 		if err != nil {
-			fmt.Fprintln(w, "oh no, internal error! Not your fault!")
+			fmt.Fprintf(w, "Oh no, internal error! Not your fault!")
 			return err
 		}
 
 		switch question {
-		case AnswerWin:
-			fmt.Fprintf(w, "I successfully guessed your animal! Awesome!\n")
+		case "Win":
+			g.Output(w, "I successfully guessed your animal! Awesome!\n")
 			g.Running = false
-		case AnswerLose:
-			fmt.Fprintf(w, "You stumped me! Well done!\n")
+		case "Loss":
+			g.Output(w, "You stumped me! Well done!\n")
 			g.LearnNewAnimal(r, w, prev2)
 			g.Running = false
 		}
@@ -121,25 +92,36 @@ func (g game) Play(r io.Reader, w io.Writer) error {
 	return nil
 }
 
+// Transcript function
+func (g game) Transcript() string {
+	return g.transcript.String()
+}
+
+// Output function - will print to screen and also add to transcript
+func (g *game) Output(w io.Writer, text string) {
+	fmt.Fprintf(w, text)
+	g.transcript.WriteString(text)
+}
+
 // LearnNewAnimal - Function to learn the question to add for new animal
-func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
+func (g *game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 	var input string
-	fmt.Fprintln(w, "Please tell me the animal you were thinking about: ")
+	g.Output(w, "Please tell me the animal you were thinking about: ")
 	scanner := bufio.NewScanner(r)
 	scanner.Scan()
 	input = scanner.Text()
+	g.transcript.WriteString(input + "\n")
 
-	fmt.Fprintf(w, "What would be a Yes/No question to distinguish %s from other animals: ", input)
+	g.Output(w, fmt.Sprintf("What would be a Yes/No question to distinguish %s from other animals: ", input))
+
 	scanner.Scan()
 	qDistinctive := scanner.Text()
+	g.transcript.WriteString(qDistinctive + "\n")
 
-	fmt.Fprintf(w, "What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input)
+	g.Output(w, fmt.Sprintf("What would be the answer to the question - \"%s\" for %s: ", qDistinctive, input))
 
 	scanner.Scan()
-	ans, err2 := GetUserYesOrNo(strings.NewReader(scanner.Text()))
-	if err2 != nil {
-		fmt.Println("error getting ans", err2)
-	}
+	ans, _ := g.GetUserYesOrNo(strings.NewReader(scanner.Text()), w)
 
 	qNewAnimal := "Is it a " + input + "?"
 
@@ -157,41 +139,49 @@ func (g game) LearnNewAnimal(r io.Reader, w io.Writer, pq string) {
 		}
 		qPrevious.No = qDistinctive
 	}
-	g.Data[pq] = qPrevious
 
+	g.Data[pq] = qPrevious
 	g.Data[qNewAnimal] = Question{
-		Yes: AnswerWin,
-		No:  AnswerLose,
+		Yes: "Win",
+		No:  "Loss",
 	}
 }
 
 // Replay - function to replay the game
-func Replay(r io.Reader) bool {
-	fmt.Print("Would you like to play again (y/n)? ")
-	var replay string
-	replay, _ = GetUserYesOrNo(r)
+func (g *game) Replay(r io.Reader, w io.Writer) bool {
+	g.Output(w, "Would you like to play again (y/n)? ")
+	replay, _ := g.GetUserYesOrNo(r, w)
 	if replay == AnswerYes {
+		g.Running = true
 		return true
 	}
-	fmt.Println("Thanks for playing!")
+	g.Output(w, "Thanks for playing!")
 	return false
 }
 
 // GetUserYesOrNo - function to map variations of yes/no responses
-func GetUserYesOrNo(r io.Reader) (string, error) {
+func (g *game) GetUserYesOrNo(r io.Reader, w io.Writer) (string, error) {
 	var input string
-	_, err := fmt.Fscanln(r, &input)
 
-	if err != nil {
-		return "", err
+	ans := true
+	var response string
+	for ans {
+		_, err := fmt.Fscanln(r, &input)
+		g.transcript.WriteString(input + "\n")
+		if err != nil {
+			return "", err
+		}
+		switch input {
+		case "yes", "y", "YES", "Yes":
+			response = AnswerYes
+			ans = false
+		case "no", "n", "NO", "No":
+			response = AnswerNo
+			ans = false
+		default:
+			ans = true
+			g.Output(w, "Please answer Yes or No (y/n)? ")
+		}
 	}
-
-	switch input {
-	case "yes", "y", "YES", "Yes":
-		return AnswerYes, nil
-	case "no", "n", "NO", "No":
-		return AnswerNo, nil
-	default:
-		return "", fmt.Errorf("Unexpected input: %q", input)
-	}
+	return response, nil
 }

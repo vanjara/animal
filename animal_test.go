@@ -6,21 +6,29 @@ import (
 	"io/ioutil"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestNewGame(t *testing.T) {
 	t.Parallel()
-	a := animal.NewGame()
+	a, err := animal.NewGame()
 	if !a.Running {
 		t.Errorf("want a.Running == true")
+	}
+	if err != nil {
+		t.Error(err)
 	}
 }
 
 func TestPlay(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame()
+	if err != nil {
+		t.Error(err)
+	}
 	input := strings.NewReader("yes\nyes\nyes\n")
-	err := testGame.Play(input, ioutil.Discard)
+	err = testGame.Play(input, ioutil.Discard)
 	if err != nil {
 		t.Error(err)
 	}
@@ -28,8 +36,39 @@ func TestPlay(t *testing.T) {
 		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
 	}
 }
+
+func TestTranscript(t *testing.T) {
+	t.Parallel()
+	testGame, err := animal.NewGame()
+	if err != nil {
+		t.Error(err)
+	}
+	input := strings.NewReader("yes\nyes\nno\ntiger\nIs it a predator?\nyes\n")
+	err = testGame.Play(input, ioutil.Discard)
+	if err != nil {
+		t.Error(err)
+	}
+	got := testGame.Transcript()
+	want := `Does it have 4 legs? yes
+Does it have stripes? yes
+Is it a zebra? no
+You stumped me! Well done!
+Please tell me the animal you were thinking about: tiger
+What would be a Yes/No question to distinguish tiger from other animals: Is it a predator?
+What would be the answer to the question - "Is it a predator?" for tiger: yes
+`
+
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
+	}
+
+}
 func TestGetUserYesOrNo(t *testing.T) {
 	t.Parallel()
+	testGame, err := animal.NewGame()
+	if err != nil {
+		t.Error(err)
+	}
 	// multiple test cases
 	testCases := []struct {
 		input         string
@@ -48,7 +87,7 @@ func TestGetUserYesOrNo(t *testing.T) {
 		{input: "Bogus", want: "no", errorExpected: true},
 	}
 	for _, tc := range testCases {
-		got, err := animal.GetUserYesOrNo(strings.NewReader(tc.input))
+		got, err := testGame.GetUserYesOrNo(strings.NewReader(tc.input), ioutil.Discard)
 		if tc.errorExpected != (err != nil) {
 			t.Fatalf("Give input %q, unexpected error Status: %v", tc.input, err)
 		}
@@ -60,13 +99,17 @@ func TestGetUserYesOrNo(t *testing.T) {
 
 func TestMultipleUserInput(t *testing.T) {
 	t.Parallel()
+	testGame, err := animal.NewGame()
+	if err != nil {
+		t.Error(err)
+	}
 	// multiple test cases
 	input := strings.NewReader("yes\nyes\n")
-	_, err := animal.GetUserYesOrNo(input)
+	_, err = testGame.GetUserYesOrNo(input, ioutil.Discard)
 	if err != nil {
 		t.Fatalf("Unexpected error Status: %v", err)
 	}
-	_, err2 := animal.GetUserYesOrNo(input)
+	_, err2 := testGame.GetUserYesOrNo(input, ioutil.Discard)
 	if err2 != nil {
 		t.Fatalf("Unexpected error Status: %v", err2)
 	}
@@ -74,7 +117,10 @@ func TestMultipleUserInput(t *testing.T) {
 
 func TestNextQuestion(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame()
+	if err != nil {
+		t.Error(err)
+	}
 	testCases := []struct {
 		question    string
 		response    string
@@ -108,19 +154,19 @@ func TestNextQuestion(t *testing.T) {
 		{
 			question:    "Is it a snake?",
 			response:    animal.AnswerYes,
-			want:        animal.AnswerWin,
+			want:        "Win",
 			errExpected: false,
 		},
 		{
 			question:    "Is it a giraffe?",
 			response:    animal.AnswerNo,
-			want:        animal.AnswerLose,
+			want:        "Loss",
 			errExpected: false,
 		},
 		{
 			question:    "Is it a lion?",
 			response:    animal.AnswerYes,
-			want:        animal.AnswerWin,
+			want:        "Win",
 			errExpected: false,
 		},
 		{
@@ -130,7 +176,6 @@ func TestNextQuestion(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		got, err := testGame.NextQuestion(tc.question, tc.response)
-		//fmt.Printf("Given input: %q, response: %q, want: %q, got: %q\n", tc.question, tc.response, tc.want, got)
 		if tc.errExpected != (err != nil) {
 			t.Fatalf("Given input: %q, unexpected error status: %v", tc.question, err)
 		}
@@ -142,10 +187,13 @@ func TestNextQuestion(t *testing.T) {
 
 func TestPlayNewAnimalAnswerYes(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame()
+	if err != nil {
+		t.Error(err)
+	}
 	input := strings.NewReader("yes\nyes\nno\ntiger\nIs it a predator?\nyes\n")
 
-	err := testGame.Play(input, ioutil.Discard)
+	err = testGame.Play(input, ioutil.Discard)
 	if err != nil {
 		t.Error(err)
 	}
@@ -162,16 +210,15 @@ func TestPlayNewAnimalAnswerYes(t *testing.T) {
 	}
 
 	input2 := strings.NewReader("yes\nyes\nyes\nyes\n")
+	testGame.Running = true
 	err2 := testGame.Play(input2, ioutil.Discard)
 	if err2 != nil {
 		t.Error(err)
 	}
 	if input2.Len() != 0 {
-		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input2.Len())
+		t.Errorf("Input 2: Given input not fully consumed, data still left to consume %d, %v and transcript is \n%s\n", input2.Len(), input2.UnreadByte(), testGame.Transcript())
 	}
-	//fmt.Printf("%+v\n", testGame.Data)
-	//fmt.Printf("%v\n", want)
-	//want = animal.AnswerWin
+
 	if got, ok := testGame.Data[want]; !ok {
 		t.Errorf("Expected %q, got %q.", want, got)
 	} else {
@@ -182,10 +229,13 @@ func TestPlayNewAnimalAnswerYes(t *testing.T) {
 
 func TestPlayNewAnimalAnswerNo(t *testing.T) {
 	t.Parallel()
-	testGame := animal.NewGame()
+	testGame, err := animal.NewGame()
+	if err != nil {
+		t.Error(err)
+	}
 	input := strings.NewReader("no\nno\nno\noctopus\nIs it a land animal?\nno\n")
 
-	err := testGame.Play(input, ioutil.Discard)
+	err = testGame.Play(input, ioutil.Discard)
 	if err != nil {
 		t.Error(err)
 	}
@@ -202,19 +252,48 @@ func TestPlayNewAnimalAnswerNo(t *testing.T) {
 	}
 
 	input2 := strings.NewReader("no\nno\nno\nyes\n")
+	testGame.Running = true
 	err2 := testGame.Play(input2, ioutil.Discard)
 	if err2 != nil {
 		t.Error(err)
 	}
 	if input2.Len() != 0 {
-		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input2.Len())
+		t.Errorf("Input 2: Given input not fully consumed, data still left to consume %d\n", input2.Len())
 	}
-	//fmt.Printf("%+v\n", testGame.Data)
-	//fmt.Printf("%+v\n", want)
-	//want = animal.AnswerWin
 	if got, ok := testGame.Data[want]; !ok {
 		t.Errorf("Expected %q, got %q.", want, got)
 	} else {
 		fmt.Printf("got %+v", got)
+	}
+}
+
+func TestReplay(t *testing.T) {
+	t.Parallel()
+	testGame, err := animal.NewGame()
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Test for replay = no
+	input := strings.NewReader("no\n")
+	got := testGame.Replay(input, ioutil.Discard)
+	want := false
+
+	if want != got {
+		t.Errorf("Expected want: %v, got: %v\n", want, got)
+	}
+	if input.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input.Len())
+	}
+
+	// Test for replay = yes
+	input2 := strings.NewReader("yes\n")
+	got2 := testGame.Replay(input2, ioutil.Discard)
+	want2 := true
+	if want2 != got2 {
+		t.Errorf("Expected want: %v, got: %v\n", want2, got2)
+	}
+	if input2.Len() != 0 {
+		t.Errorf("Given input not fully consumed, data still left to consume %d\n", input2.Len())
 	}
 }
