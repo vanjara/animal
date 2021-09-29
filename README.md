@@ -108,3 +108,11 @@ var StartingData = map[string]Question{
 ### Future versions 
 - Play it in a browser?
 - Auto deployment somewhere?
+- Multi player support?
+- How to write back/learn new animal? 
+- Write back once a game finishes (multiple others could be running)
+- Database backend?
+- How much can I reuse if it was a general guessing game
+- General library for any guessing game
+- Could there be other ways of teaching the game (wikipedia or something else or some format database)
+- What if we had a csv/data file and learn from it
